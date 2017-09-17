@@ -430,7 +430,9 @@ termination-value-unique (laterʳ p) (laterʳ q) =
 -- Alternative definitions of weak bisimilarity
 
 -- An alternative definition of weak bisimilarity (basically the one
--- used in the paper).
+-- used in the paper "Partiality, Revisited: The Partiality Monad as a
+-- Quotient Inductive-Inductive Type" by Altenkirch, Danielsson and
+-- Kraus).
 --
 -- This definition is logically equivalent to the one above, see
 -- Delay-monad.Sized.Partial-order.≈⇔≈′.
