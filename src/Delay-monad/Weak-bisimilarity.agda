@@ -7,8 +7,6 @@
 module Delay-monad.Weak-bisimilarity {a} {A : Set a} where
 
 open import Equality.Propositional
-open import H-level.Truncation.Propositional as Trunc
-open import Interval using (ext)
 open import Logical-equivalence using (_⇔_)
 open import Prelude
 
@@ -344,23 +342,6 @@ mutual
 ¬¬[⇑⊎⇓] : ∀ x → ¬¬ (never ≈ x ⊎ ∃ λ y → x ⇓ y)
 ¬¬[⇑⊎⇓] x = [ inj₂ , inj₁ ∘ ¬⇓→⇑ _ ] ⟨$⟩ excluded-middle
 
--- Every computation is weakly bisimilar to either never or
--- now something (assuming excluded middle). See also
--- Delay-monad.Partial-order.⇑⊎⇓.
-
-∥⇑∥⊎∥⇓∥ : Excluded-middle a → ∀ x → ∥ never ≈ x ∥ ⊎ ∥ (∃ λ y → x ⇓ y) ∥
-∥⇑∥⊎∥⇓∥ em x =
-  Excluded-middle→Double-negation-elimination em
-    (⊎-closure-propositional
-       (Trunc.rec (Π-closure ext 1 λ _ → ⊥-propositional) λ x⇑ →
-        Trunc.rec ⊥-propositional λ { (y , x⇓y) →
-          now≉never (now y  ≈⟨ x⇓y ⟩
-                     x      ≈⟨ symmetric x⇑ ⟩∎
-                     never  ∎) })
-       truncation-is-proposition
-       truncation-is-proposition)
-    (⊎-map ∣_∣ ∣_∣ ⟨$⟩ ¬¬[⇑⊎⇓] x)
-
 -- The notion of weak bisimilarity defined here is not necessarily
 -- propositional.
 
@@ -438,10 +419,12 @@ _≈′_ : Delay A ∞ → Delay A ∞ → Set a
 x ≈′ y = ∀ z → x ⇓ z ⇔ y ⇓ z
 
 -- If A is a set, then this alternative definition of weak
--- bisimilarity is propositional.
+-- bisimilarity is propositional (assuming extensionality).
 
-≈′-propositional : Is-set A → ∀ {x y} → Is-proposition (x ≈′ y)
-≈′-propositional A-set =
+≈′-propositional :
+  Extensionality a a →
+  Is-set A → ∀ {x y} → Is-proposition (x ≈′ y)
+≈′-propositional ext A-set =
   Π-closure ext 1 λ _ →
   ⇔-closure ext 1 (Terminates-propositional A-set)
                   (Terminates-propositional A-set)

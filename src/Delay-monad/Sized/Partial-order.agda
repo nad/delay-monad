@@ -9,16 +9,17 @@ open import Prelude hiding (module W)
 module Delay-monad.Sized.Partial-order {a} {A : Size → Set a} where
 
 open import Equality.Propositional
-open import H-level.Truncation.Propositional as Trunc
 open import Logical-equivalence using (_⇔_)
 
 open import Bijection equality-with-J using (_↔_)
 open import Double-negation equality-with-J
 open import Function-universe equality-with-J hiding (id; _∘_)
 open import H-level equality-with-J
+open import H-level.Closure equality-with-J
+open import Monad equality-with-J
 
 open import Delay-monad.Sized
-open import Delay-monad.Sized.Strong-bisimilarity as S
+open import Delay-monad.Sized.Strong-bisimilarity
   using (Strongly-bisimilar)
 open import Delay-monad.Sized.Weak-bisimilarity as W
   using (Weakly-bisimilar; ∞Weakly-bisimilar; _≈_; force)
@@ -403,13 +404,20 @@ uninhabited→size-preserving-transitivity-⊑≈ʳ =
   (∀ z → x W.⇓ z ⇔ y W.⇓ z)                              □
 
 -- If A ∞ is a set, then every computation is weakly bisimilar to
--- either never or now something (assuming excluded middle).
+-- never or now something (assuming excluded middle and
+-- extensionality).
 
-⇑⊎⇓ : Excluded-middle a → Is-set (A ∞) →
-      ∀ x → never ≈ x ⊎ ∃ λ y → x W.⇓ y
-⇑⊎⇓ em A-set x =
-  ⊎-map
-    (_⇔_.from ≈⇔≈′ ∘
-     Trunc.rec (W.≈′-propositional A-set) (_⇔_.to ≈⇔≈′))
-    (Trunc.rec (W.∃-Terminates-propositional A-set) id)
-    (W.∥⇑∥⊎∥⇓∥ em x)
+⇑⊎⇓ :
+  Excluded-middle a → Extensionality a a →
+  Is-set (A ∞) → (x : Delay A ∞) → never ≈ x ⊎ ∃ λ y → x W.⇓ y
+⇑⊎⇓ em ext A-set x =
+  ⊎-map (_⇔_.from ≈⇔≈′) id $
+  Excluded-middle→Double-negation-elimination em
+    (⊎-closure-propositional
+       (λ { x⇑ (y , x⇓y) →
+            W.now≉never (now y  W.≈⟨ x⇓y ⟩
+                         x      W.≈⟨ W.symmetric (_⇔_.from ≈⇔≈′ x⇑) ⟩∎
+                         never  ∎) })
+       (W.≈′-propositional ext A-set)
+       (W.∃-Terminates-propositional A-set))
+    (⊎-map (_⇔_.to ≈⇔≈′) id ⟨$⟩ W.¬¬[⇑⊎⇓] x)
