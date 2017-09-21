@@ -395,9 +395,9 @@ uninhabited→size-preserving-transitivity-⊑≈ʳ =
 ≈⇔≈′ {x} {y} =
   x ≈ y                                                  ↝⟨ ≈⇔⊑×⊒ ⟩
   x ⊑ y × y ⊑ x                                          ↝⟨ ⊑⇔⇓→⇓ ×-cong ⊑⇔⇓→⇓ ⟩
-  (∀ z → x ⇓ z → y ⇓ z) × (∀ z → y ⇓ z → x ⇓ z)          ↝⟨ ∀-cong-⇔ (λ _ → →-cong-⇔ (from-bijection ⇓↔⇓) (from-bijection ⇓↔⇓))
+  (∀ z → x ⇓ z → y ⇓ z) × (∀ z → y ⇓ z → x ⇓ z)          ↝⟨ ∀-cong _ (λ _ → →-cong _ (from-bijection ⇓↔⇓) (from-bijection ⇓↔⇓))
                                                               ×-cong
-                                                            ∀-cong-⇔ (λ _ → →-cong-⇔ (from-bijection ⇓↔⇓) (from-bijection ⇓↔⇓)) ⟩
+                                                            ∀-cong _ (λ _ → →-cong _ (from-bijection ⇓↔⇓) (from-bijection ⇓↔⇓)) ⟩
   (∀ z → x W.⇓ z → y W.⇓ z) × (∀ z → y W.⇓ z → x W.⇓ z)  ↝⟨ record { to   = uncurry λ to from z → record { to = to z; from = from z }
                                                                    ; from = λ hyp → _⇔_.to ∘ hyp , _⇔_.from ∘ hyp
                                                                    } ⟩□
