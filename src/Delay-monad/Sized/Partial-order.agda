@@ -89,8 +89,8 @@ _⇓_ = Terminates ∞
 ⊑now→⇓→⇓ now-cong   now-cong   = now-cong
 ⊑now→⇓→⇓ (laterˡ p) (laterʳ q) = laterʳ (⊑now→⇓→⇓ (force p) q)
 
--- The notion of termination defined here is isomorphic to the one
--- defined in Delay-monad.Weak-bisimilarity.
+-- The notion of termination defined here is pointwise isomorphic to
+-- the one defined in Delay-monad.Sized.Weak-bisimilarity.
 
 ⇓↔⇓ : ∀ {i x y} → Terminates i x y ↔ W.Terminates i x y
 ⇓↔⇓ = record
@@ -120,7 +120,7 @@ _⇓_ = Terminates ∞
   to∘from W.now-cong   = refl
   to∘from (W.laterʳ p) = cong W.laterʳ (to∘from p)
 
--- Terminates i is isomorphic to Terminates ∞.
+-- Terminates i is pointwise isomorphic to Terminates ∞.
 
 Terminates↔⇓ : ∀ {i x y} → Terminates i x y ↔ x ⇓ y
 Terminates↔⇓ {i} {x} {y} =

@@ -74,7 +74,7 @@ infix 4 _⇓_
 _⇓_ : Delay A ∞ → A → Set a
 _⇓_ = Terminates ∞
 
--- Terminates i is isomorphic to Terminates ∞.
+-- Terminates i is pointwise isomorphic to Terminates ∞.
 --
 -- Note that Terminates carves out an "inductive fragment" of
 -- Weakly-bisimilar: the only "coinductive" constructor, later-cong,
@@ -410,8 +410,8 @@ termination-value-unique (laterʳ p) (laterʳ q) =
 -- Quotient Inductive-Inductive Type" by Altenkirch, Danielsson and
 -- Kraus).
 --
--- This definition is logically equivalent to the one above, see
--- Delay-monad.Partial-order.≈⇔≈′.
+-- This definition is pointwise logically equivalent to the one above,
+-- see Delay-monad.Partial-order.≈⇔≈′.
 
 infix 4 _≈′_
 
