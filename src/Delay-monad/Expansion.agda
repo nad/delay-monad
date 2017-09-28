@@ -15,11 +15,9 @@ open import H-level equality-with-J
 
 open import Delay-monad
 open import Delay-monad.Strong-bisimilarity as Strong
-  using (Strongly-bisimilar; ∞Strongly-bisimilar; _∼_;
-         now-cong; later-cong; force)
+  using ([_]_∼_; _∼_; now; later; force)
 open import Delay-monad.Weak-bisimilarity as Weak
-  using (Weakly-bisimilar; ∞Weakly-bisimilar; _≈_;
-         now-cong; later-cong; laterˡ; laterʳ; force)
+  using ([_]_≈_; _≈_; now; later; laterˡ; laterʳ; force)
 
 ------------------------------------------------------------------------
 -- The expansion relation
@@ -27,104 +25,78 @@ open import Delay-monad.Weak-bisimilarity as Weak
 -- The expansion relation, defined using mixed induction and
 -- coinduction.
 
+infix 4 [_]_≳_ [_]_≳′_ _≳_ _≳′_ _≲_ _≲′_
+
 mutual
 
-  data Expansion (i : Size) : (x y : Delay A ∞) → Set a where
-    now-cong   : ∀ {x} → Expansion i (now x) (now x)
-    later-cong : ∀ {x y} →
-                 ∞Expansion i (force x) (force y) →
-                 Expansion i (later x) (later y)
-    laterˡ     : ∀ {x y} →
-                 Expansion i (force x) y →
-                 Expansion i (later x) y
+  data [_]_≳_ (i : Size) : (x y : Delay A ∞) → Set a where
+    now    : ∀ {x} → [ i ] now x ≳ now x
+    later  : ∀ {x y} →
+             [ i ] force x ≳′ force y →
+             [ i ] later x ≳  later y
+    laterˡ : ∀ {x y} →
+             [ i ] force x ≳ y →
+             [ i ] later x ≳ y
 
-  record ∞Expansion (i : Size) (x y : Delay A ∞) : Set a where
+  record [_]_≳′_ (i : Size) (x y : Delay A ∞) : Set a where
     coinductive
     field
-      force : {j : Size< i} → Expansion j x y
+      force : {j : Size< i} → [ j ] x ≳ y
 
-open ∞Expansion public
+open [_]_≳′_ public
 
-infix 4 _≳_ _∞≳_ _≲_ _∞≲_
-
-_≳_ _∞≳_ _≲_ _∞≲_ : Delay A ∞ → Delay A ∞ → Set a
-_≳_  = Expansion ∞
-_∞≳_ = ∞Expansion ∞
+_≳_ _≳′_ _≲_ _≲′_ : Delay A ∞ → Delay A ∞ → Set a
+_≳_  = [ ∞ ]_≳_
+_≳′_ = [ ∞ ]_≳′_
 _≲_  = flip _≳_
-_∞≲_ = flip _∞≳_
+_≲′_ = flip _≳′_
 
 ------------------------------------------------------------------------
 -- Conversion lemmas
 
-mutual
+-- Strong bisimilarity is contained in the expansion relation.
 
-  -- Strong bisimilarity is contained in the expansion relation.
+∼→≳ : ∀ {i x y} → [ i ] x ∼ y → [ i ] x ≳ y
+∼→≳ now       = now
+∼→≳ (later p) = later λ { .force → ∼→≳ (force p) }
 
-  ∼→≳ : ∀ {i x y} → Strongly-bisimilar i x y → Expansion i x y
-  ∼→≳ now-cong       = now-cong
-  ∼→≳ (later-cong p) = later-cong (∞∼→≳ p)
+-- The expansion relation is contained in weak bisimilarity.
 
-  ∞∼→≳ : ∀ {i x y} → ∞Strongly-bisimilar i x y → ∞Expansion i x y
-  force (∞∼→≳ p) = ∼→≳ (force p)
-
-mutual
-
-  -- The expansion relation is contained in weak bisimilarity.
-
-  ≳→≈ : ∀ {i x y} → Expansion i x y → Weakly-bisimilar i x y
-  ≳→≈ now-cong       = now-cong
-  ≳→≈ (later-cong p) = later-cong (∞≳→≈ p)
-  ≳→≈ (laterˡ p)     = laterˡ (≳→≈ p)
-
-  ∞≳→≈ : ∀ {i x y} → ∞Expansion i x y → ∞Weakly-bisimilar i x y
-  force (∞≳→≈ p) = ≳→≈ (force p)
+≳→≈ : ∀ {i x y} → [ i ] x ≳ y → [ i ] x ≈ y
+≳→≈ now        = now
+≳→≈ (later  p) = later λ { .force → ≳→≈ (force p) }
+≳→≈ (laterˡ p) = laterˡ (≳→≈ p)
 
 -- In some cases weak bisimilarity is contained in the expansion
 -- relation.
 
-≈→≳-now :
-  ∀ {i x y} → Weakly-bisimilar i x (now y) → Expansion i x (now y)
-≈→≳-now now-cong   = now-cong
+≈→≳-now : ∀ {i x y} → [ i ] x ≈ now y → [ i ] x ≳ now y
+≈→≳-now now        = now
 ≈→≳-now (laterˡ p) = laterˡ (≈→≳-now p)
 
-mutual
-
-  ≈→≳-never :
-    ∀ {i x} → Weakly-bisimilar i never x → Expansion i never x
-  ≈→≳-never (later-cong p) = later-cong (∞≈→≳-never p)
-  ≈→≳-never (laterˡ p)     = ≈→≳-never p
-  ≈→≳-never (laterʳ p)     =
-    later-cong (∞≈→≳-never (record { force = λ { {_} → p } }))
-
-  ∞≈→≳-never :
-    ∀ {i x} → ∞Weakly-bisimilar i never x → ∞Expansion i never x
-  force (∞≈→≳-never p) = ≈→≳-never (force p)
+≈→≳-never : ∀ {i x} → [ i ] never ≈ x → [ i ] never ≳ x
+≈→≳-never (later  p) = later λ { .force → ≈→≳-never (force p) }
+≈→≳-never (laterˡ p) = ≈→≳-never p
+≈→≳-never (laterʳ p) = later λ { .force → ≈→≳-never p }
 
 -- In some cases the expansion relation is contained in strong
 -- bisimilarity.
 
-mutual
-
-  ≳→∼-never :
-    ∀ {i x} → Expansion i never x → Strongly-bisimilar i never x
-  ≳→∼-never (later-cong p) = later-cong (∞≳→∼-never p)
-  ≳→∼-never (laterˡ p)     = ≳→∼-never p
-
-  ∞≳→∼-never :
-    ∀ {i x} → ∞Expansion i never x → ∞Strongly-bisimilar i never x
-  force (∞≳→∼-never p) = ≳→∼-never (force p)
+≳→∼-never : ∀ {i x} → [ i ] never ≳ x → [ i ] never ∼ x
+≳→∼-never (later  p) = later λ { .force → ≳→∼-never (force p) }
+≳→∼-never (laterˡ p) = ≳→∼-never p
 
 ------------------------------------------------------------------------
 -- Some negative results
 
 -- The computation never is not an expansion of now x.
 
-never≵now : ∀ {i x} → ¬ Expansion i never (now x)
+never≵now : ∀ {i x} → ¬ [ i ] never ≳ now x
 never≵now {i} = Weak.now≉never {i = i} ∘ Weak.symmetric ∘ ≳→≈
 
 -- The computation now x is not an expansion of never.
 
-now≵never : ∀ {i x} → ¬ Expansion i (now x) never
+now≵never : ∀ {i x} → ¬ [ i ] now x ≳ never
 now≵never = Weak.now≉never ∘ ≳→≈
 
 -- The expansion relation defined here is not pointwise propositional.
@@ -136,14 +108,8 @@ now≵never = Weak.now≉never ∘ ≳→≈
   proof₁ ≡ proof₂                     ↝⟨ (λ ()) ⟩□
   ⊥₀                                  □
   where
-
-  mutual
-
-    proof₁ : never ≳ never
-    proof₁ = later-cong ∞proof₁
-
-    ∞proof₁ : never ∞≳ never
-    force ∞proof₁ = proof₁
+  proof₁ : never ≳ never
+  proof₁ = later λ { .force → proof₁ }
 
   proof₂ : never ≳ never
   proof₂ = laterˡ proof₁
@@ -154,28 +120,18 @@ now≵never = Weak.now≉never ∘ ≳→≈
 -- One can remove a later constructor to the right.
 
 laterʳ⁻¹ : ∀ {i} {j : Size< i} {x y} →
-           Expansion i x (later y) →
-           Expansion j x (force y)
-laterʳ⁻¹ (later-cong p) = laterˡ (force p)
-laterʳ⁻¹ (laterˡ p)     = laterˡ (laterʳ⁻¹ p)
-
-∞laterʳ⁻¹ : ∀ {i x y} →
-            Expansion i x (later y) →
-            ∞Expansion i x (force y)
-force (∞laterʳ⁻¹ p) = laterʳ⁻¹ p
+           [ i ] x ≳ later y →
+           [ j ] x ≳ force y
+laterʳ⁻¹ (later  p) = laterˡ (force p)
+laterʳ⁻¹ (laterˡ p) = laterˡ (laterʳ⁻¹ p)
 
 -- One can remove one later constructor on each side.
 
 later⁻¹ : ∀ {i} {j : Size< i} {x y} →
-          Expansion i (later x) (later y) →
-          Expansion j (force x) (force y)
-later⁻¹ (later-cong p) = force p
-later⁻¹ (laterˡ p)     = laterʳ⁻¹ p
-
-∞later⁻¹ : ∀ {i x y} →
-           Expansion i (later x) (later y) →
-           ∞Expansion i (force x) (force y)
-force (∞later⁻¹ p) = later⁻¹ p
+          [ i ] later x ≳ later y →
+          [ j ] force x ≳ force y
+later⁻¹ (later  p) = force p
+later⁻¹ (laterˡ p) = laterʳ⁻¹ p
 
 -- The following size-preserving variant of laterʳ⁻¹ can be defined.
 --
@@ -183,171 +139,122 @@ force (∞later⁻¹ p) = later⁻¹ p
 -- uninhabited), see below.
 
 laterˡʳ⁻¹ :
-  ∀ {i} {x y : ∞Delay A ∞} →
-  Expansion i (later x) (force y) →
-  Expansion i (force x) (later y) →
-  Expansion i (force x) (force y)
-laterˡʳ⁻¹ p q = laterˡʳ⁻¹′ p q refl refl
+  ∀ {i} {x y : Delay′ A ∞} →
+  [ i ] later x ≳ force y →
+  [ i ] force x ≳ later y →
+  [ i ] force x ≳ force y
+laterˡʳ⁻¹ {i} p q = laterˡʳ⁻¹′ p q refl refl
   where
-  ∞laterˡʳ⁻¹′ :
-    ∀ {i x′ y′} {x y : ∞Delay A ∞} →
-    ∞Expansion i x′ (force y) →
-    ∞Expansion i (force x) y′ →
+  laterˡʳ⁻¹″ :
+    ∀ {x′ y′} {x y : Delay′ A ∞} →
+    ({j : Size< i} → [ j ] x′ ≳ force y) →
+    ({j : Size< i} → [ j ] force x ≳ y′) →
     later x ≡ x′ → later y ≡ y′ →
-    ∞Expansion i (force x) (force y)
-  force (∞laterˡʳ⁻¹′ p q refl refl) = laterˡʳ⁻¹ (force p) (force q)
+    [ i ] later x ≳ later y
+  laterˡʳ⁻¹″ p q refl refl = later λ { .force → laterˡʳ⁻¹ p q }
 
   laterˡʳ⁻¹′ :
-    ∀ {i x′ y′} {x y : ∞Delay A ∞} →
-    Expansion i (later x) y′ →
-    Expansion i x′ (later y) →
+    ∀ {x′ y′} {x y : Delay′ A ∞} →
+    [ i ] later x ≳ y′ →
+    [ i ] x′ ≳ later y →
     x′ ≡ force x → y′ ≡ force y →
-    Expansion i x′ y′
-  laterˡʳ⁻¹′ (later-cong p) (later-cong q) x′≡  y′≡  = later-cong (∞laterˡʳ⁻¹′ p q             x′≡ y′≡)
-  laterˡʳ⁻¹′ (later-cong p) (laterˡ q)     x′≡  y′≡  = later-cong (∞laterˡʳ⁻¹′ p (∞laterʳ⁻¹ q) x′≡ y′≡)
-  laterˡʳ⁻¹′ (laterˡ p)     _              refl refl = p
-
-∞laterˡʳ⁻¹ :
-  ∀ {i} {x y : ∞Delay A ∞} →
-  ∞Expansion i (later x) (force y) →
-  ∞Expansion i (force x) (later y) →
-  ∞Expansion i (force x) (force y)
-force (∞laterˡʳ⁻¹ p q) = laterˡʳ⁻¹ (force p) (force q)
+    [ i ] x′ ≳ y′
+  laterˡʳ⁻¹′ (later  p) (later  q) x′≡  y′≡  = laterˡʳ⁻¹″ (force p) (force q)                x′≡ y′≡
+  laterˡʳ⁻¹′ (later  p) (laterˡ q) x′≡  y′≡  = laterˡʳ⁻¹″ (force p) (λ { {_} → laterʳ⁻¹ q }) x′≡ y′≡
+  laterˡʳ⁻¹′ (laterˡ p) _          refl refl = p
 
 ------------------------------------------------------------------------
 -- The expansion relation is a partial order (up to weak bisimilarity)
 
-mutual
+-- The expansion relation is reflexive.
 
-  -- The expansion relation is reflexive.
-
-  reflexive : (x : Delay A ∞) → x ≳ x
-  reflexive (now x)   = now-cong
-  reflexive (later x) = later-cong (∞reflexive (force x))
-
-  ∞reflexive : (x : Delay A ∞) → x ∞≳ x
-  force (∞reflexive x) = reflexive x
+reflexive : ∀ {i} (x : Delay A ∞) → [ i ] x ≳ x
+reflexive (now x)   = now
+reflexive (later x) = later λ { .force → reflexive (force x) }
 
 -- The expansion relation is antisymmetric (up to weak bisimilarity).
 
 antisymmetric :
   ∀ {i} {x y : Delay A ∞} →
-  Expansion i x y → Expansion i y x → Weakly-bisimilar i x y
+  [ i ] x ≳ y → [ i ] y ≳ x → [ i ] x ≈ y
 antisymmetric p _ = ≳→≈ p
 
-mutual
+-- The expansion relation is transitive.
 
-  -- The expansion relation is transitive.
-
-  transitive : ∀ {i} {x y z : Delay A ∞} →
-               x ≳ y → Expansion i y z → Expansion i x z
-  transitive {x = now x}   now-cong now-cong = now-cong
-  transitive {x = later x} p        q        = later-trans p q
-    where
-    later-trans : ∀ {i x} {y z : Delay A ∞} →
-                  later x ≳ y → Expansion i y z → Expansion i (later x) z
-    later-trans p          (later-cong q) = later-cong (∞transitive (later⁻¹ p) q)
-    later-trans p          (laterˡ q)     = later-trans (laterʳ⁻¹ p) q
-    later-trans (laterˡ p) q              = laterˡ (transitive p q)
-
-  ∞transitive : ∀ {i} {x y z : Delay A ∞} →
-                x ≳ y → ∞Expansion i y z → ∞Expansion i x z
-  force (∞transitive p q) = transitive p (force q)
+transitive : ∀ {i} {x y z : Delay A ∞} →
+             x ≳ y → [ i ] y ≳ z → [ i ] x ≳ z
+transitive {x = now x}   now now = now
+transitive {x = later x} p   q   = trans-later p q
+  where
+  trans-later : ∀ {i x} {y z : Delay A ∞} →
+                later x ≳ y → [ i ] y ≳ z → [ i ] later x ≳ z
+  trans-later p          (later  q) = later λ { .force →
+                                        transitive (later⁻¹ p) (force q) }
+  trans-later p          (laterˡ q) = trans-later (laterʳ⁻¹ p) q
+  trans-later (laterˡ p) q          = laterˡ (transitive p q)
 
 -- Some size-preserving variants of transitivity.
 --
 -- Many size-preserving variants cannot be defined (unless A is
 -- uninhabited), see below.
 
-mutual
-
-  transitive-≳∼ :
-    ∀ {i} {x y z : Delay A ∞} →
-    Expansion i x y → Strongly-bisimilar i y z → Expansion i x z
-  transitive-≳∼ now-cong       now-cong       = now-cong
-  transitive-≳∼ (later-cong p) (later-cong q) = later-cong (∞transitive-≳∼ p q)
-  transitive-≳∼ (laterˡ p)     q              = laterˡ (transitive-≳∼ p q)
-
-  ∞transitive-≳∼ :
-    ∀ {i} {x y z : Delay A ∞} →
-    ∞Expansion i x y → ∞Strongly-bisimilar i y z → ∞Expansion i x z
-  force (∞transitive-≳∼ p q) = transitive-≳∼ (force p) (force q)
+transitive-≳∼ :
+  ∀ {i} {x y z : Delay A ∞} →
+  [ i ] x ≳ y → [ i ] y ∼ z → [ i ] x ≳ z
+transitive-≳∼ now        now       = now
+transitive-≳∼ (later  p) (later q) = later λ { .force →
+                                       transitive-≳∼ (force p) (force q) }
+transitive-≳∼ (laterˡ p) q         = laterˡ (transitive-≳∼ p q)
 
 transitive-∼≳ :
   ∀ {i} {x y z : Delay A ∞} →
-  x ∼ y → Expansion i y z → Expansion i x z
+  x ∼ y → [ i ] y ≳ z → [ i ] x ≳ z
 transitive-∼≳ = transitive ∘ ∼→≳
 
-mutual
-
-  transitive-≳≈ :
-    ∀ {i} {x y z : Delay A ∞} →
-    x ≳ y → Weakly-bisimilar i y z → Weakly-bisimilar i x z
-  transitive-≳≈ {x = now x}   now-cong q = q
-  transitive-≳≈ {x = later x} p        q = later-trans p q
-    where
-    later-trans : ∀ {i x} {y z : Delay A ∞} →
-                  later x ≳ y → Weakly-bisimilar i y z →
-                  Weakly-bisimilar i (later x) z
-    later-trans p              (later-cong q) = later-cong (∞transitive-≳≈ (later⁻¹ p) q)
-    later-trans p              (laterˡ q)     = later-trans (laterʳ⁻¹ p) q
-    later-trans (later-cong p) (laterʳ q)     = later-cong (∞transitive-≳≈ (force p) (Weak.∞laterˡ⁻¹ q))
-    later-trans (laterˡ p)     q              = laterˡ (transitive-≳≈ p q)
-
-  ∞transitive-≳≈ :
-    ∀ {i} {x y z : Delay A ∞} →
-    x ≳ y → ∞Weakly-bisimilar i y z → ∞Weakly-bisimilar i x z
-  force (∞transitive-≳≈ p q) = transitive-≳≈ p (force q)
+transitive-≳≈ :
+  ∀ {i} {x y z : Delay A ∞} →
+  x ≳ y → [ i ] y ≈ z → [ i ] x ≈ z
+transitive-≳≈ {x = now x}   now q = q
+transitive-≳≈ {x = later x} p   q = trans-later p q
+  where
+  trans-later : ∀ {i x} {y z : Delay A ∞} →
+                later x ≳ y → [ i ] y ≈ z → [ i ] later x ≈ z
+  trans-later p          (later  q) = later λ { .force →
+                                        transitive-≳≈ (later⁻¹ p) (force q) }
+  trans-later (later  p) (laterʳ q) = later λ { .force →
+                                        transitive-≳≈ (force p) (Weak.laterˡ⁻¹ q) }
+  trans-later p          (laterˡ q) = trans-later (laterʳ⁻¹ p) q
+  trans-later (laterˡ p) q          = laterˡ (transitive-≳≈ p q)
 
 transitive-≈≲ :
   ∀ {i} {x y z : Delay A ∞} →
-  Weakly-bisimilar i x y → y ≲ z → Weakly-bisimilar i x z
+  [ i ] x ≈ y → y ≲ z → [ i ] x ≈ z
 transitive-≈≲ p q = Weak.symmetric (transitive-≳≈ q (Weak.symmetric p))
 
 -- Some special cases of symmetry hold.
 
-mutual
+symmetric-neverˡ : ∀ {i x} → [ i ] never ≳ x → [ i ] x ≳ never
+symmetric-neverˡ (later  p) = later λ { .force →
+                                symmetric-neverˡ (force p) }
+symmetric-neverˡ (laterˡ p) = symmetric-neverˡ p
 
-  symmetric-neverˡ :
-    ∀ {i x} → Expansion i never x → Expansion i x never
-  symmetric-neverˡ (later-cong p) = later-cong (∞symmetric-neverˡ p)
-  symmetric-neverˡ (laterˡ p)     = symmetric-neverˡ p
-
-  ∞symmetric-neverˡ :
-    ∀ {i x} → ∞Expansion i never x → ∞Expansion i x never
-  force (∞symmetric-neverˡ p) = symmetric-neverˡ (force p)
-
-mutual
-
-  symmetric-neverʳ :
-    ∀ {i x} → Expansion i x never → Expansion i never x
-  symmetric-neverʳ (later-cong p) = later-cong (∞symmetric-neverʳ p)
-  symmetric-neverʳ (laterˡ p)     =
-    later-cong (∞symmetric-neverʳ (record { force = λ { {_} → p } }))
-
-  ∞symmetric-neverʳ :
-    ∀ {i x} → ∞Expansion i x never → ∞Expansion i never x
-  force (∞symmetric-neverʳ p) = symmetric-neverʳ (force p)
+symmetric-neverʳ : ∀ {i x} → [ i ] x ≳ never → [ i ] never ≳ x
+symmetric-neverʳ (later  p) = later λ { .force →
+                                symmetric-neverʳ (force p) }
+symmetric-neverʳ (laterˡ p) = later λ { .force → symmetric-neverʳ p }
 
 ------------------------------------------------------------------------
 -- Lemmas stating that functions of certain types can be defined iff A
 -- is uninhabited
 
-mutual
+-- A lemma used in several of the proofs below: If A is uninhabited,
+-- then the expansion relation is trivial.
 
-  -- A lemma used in several of the proofs below: If A is uninhabited,
-  -- then the expansion relation is trivial.
-
-  uninhabited→trivial : ∀ {i} → ¬ A → ∀ x y → Expansion i x y
-  uninhabited→trivial ¬A (now x)   _         = ⊥-elim (¬A x)
-  uninhabited→trivial ¬A (later x) (now y)   = ⊥-elim (¬A y)
-  uninhabited→trivial ¬A (later x) (later y) =
-    later-cong (∞uninhabited→trivial ¬A x y)
-
-  ∞uninhabited→trivial :
-    ∀ {i} → ¬ A → ∀ x y → ∞Expansion i (force x) (force y)
-  force (∞uninhabited→trivial ¬A x y) =
-    uninhabited→trivial ¬A (force x) (force y)
+uninhabited→trivial : ∀ {i} → ¬ A → ∀ x y → [ i ] x ≳ y
+uninhabited→trivial ¬A (now x)   _         = ⊥-elim (¬A x)
+uninhabited→trivial ¬A (later x) (now y)   = ⊥-elim (¬A y)
+uninhabited→trivial ¬A (later x) (later y) =
+  later λ { .force → uninhabited→trivial ¬A (force x) (force y) }
 
 -- There is a function that removes a later constructor to the left,
 -- for computations of specific forms, iff A is uninhabited.
@@ -426,10 +333,9 @@ transitive-≳≈⇔uninhabited = record
 -- relation is replaced by strong bisimilarity, and both arguments are
 -- specialised, can be made size-preserving iff A is uninhabited.
 
-Laterʳ⁻¹-∼≳ =
-  ∀ {i x} →
-  Strongly-bisimilar i never (later (record { force = now x })) →
-  Expansion i never (now x)
+Laterʳ⁻¹-∼≳ = ∀ {i x} →
+              [ i ] never ∼ later (record { force = now x }) →
+              [ i ] never ≳ now x
 
 size-preserving-laterʳ⁻¹-∼≳⇔uninhabited : Laterʳ⁻¹-∼≳ ⇔ ¬ A
 size-preserving-laterʳ⁻¹-∼≳⇔uninhabited = record
@@ -444,9 +350,7 @@ size-preserving-laterʳ⁻¹-∼≳⇔uninhabited = record
 -- The function laterʳ⁻¹ can be made size-preserving iff A is
 -- uninhabited.
 
-Laterʳ⁻¹ = ∀ {i x y} →
-           Expansion i x (later y) →
-           Expansion i x (force y)
+Laterʳ⁻¹ = ∀ {i x y} → [ i ] x ≳ later y → [ i ] x ≳ force y
 
 size-preserving-laterʳ⁻¹⇔uninhabited : Laterʳ⁻¹ ⇔ ¬ A
 size-preserving-laterʳ⁻¹⇔uninhabited = record
@@ -462,11 +366,11 @@ size-preserving-laterʳ⁻¹⇔uninhabited = record
 -- first argument iff A is uninhabited.
 
 Transitivity-∼≳ˡ = ∀ {i} {x y z : Delay A ∞} →
-                   Strongly-bisimilar i x y → y ≳ z → Expansion i x z
+                   [ i ] x ∼ y → y ≳ z → [ i ] x ≳ z
 
 size-preserving-transitivity-∼≳ˡ⇔uninhabited : Transitivity-∼≳ˡ ⇔ ¬ A
 size-preserving-transitivity-∼≳ˡ⇔uninhabited = record
-  { to   = Transitivity-∼≳ˡ  ↝⟨ (λ trans never∼lnx → trans never∼lnx (laterˡ now-cong) ) ⟩
+  { to   = Transitivity-∼≳ˡ  ↝⟨ (λ trans never∼lnx → trans never∼lnx (laterˡ now) ) ⟩
            Laterʳ⁻¹-∼≳       ↝⟨ _⇔_.to size-preserving-laterʳ⁻¹-∼≳⇔uninhabited ⟩□
            ¬ A               □
   ; from = ¬ A               ↝⟨ uninhabited→trivial ⟩
@@ -478,7 +382,7 @@ size-preserving-transitivity-∼≳ˡ⇔uninhabited = record
 -- first argument iff A is uninhabited.
 
 Transitivityˡ = ∀ {i} {x y z : Delay A ∞} →
-                Expansion i x y → y ≳ z → Expansion i x z
+                [ i ] x ≳ y → y ≳ z → [ i ] x ≳ z
 
 size-preserving-transitivityˡ⇔uninhabited : Transitivityˡ ⇔ ¬ A
 size-preserving-transitivityˡ⇔uninhabited = record
@@ -493,9 +397,8 @@ size-preserving-transitivityˡ⇔uninhabited = record
 -- There is a variant of transitive-≳≈ that preserves the size of the
 -- first argument iff A is uninhabited.
 
-Transitivity-≳≈ˡ =
-  ∀ {i} {x y z : Delay A ∞} →
-  Expansion i x y → y ≈ z → Weakly-bisimilar i x z
+Transitivity-≳≈ˡ = ∀ {i} {x y z : Delay A ∞} →
+                   [ i ] x ≳ y → y ≈ z → [ i ] x ≈ z
 
 size-preserving-transitivity-≳≈ˡ⇔uninhabited : Transitivity-≳≈ˡ ⇔ ¬ A
 size-preserving-transitivity-≳≈ˡ⇔uninhabited = record
@@ -509,9 +412,8 @@ size-preserving-transitivity-≳≈ˡ⇔uninhabited = record
 
 -- More lemmas of a similar kind.
 
-Transitivity-≈≲ʳ =
-  ∀ {i} {x y z : Delay A ∞} →
-  x ≈ y → Expansion i z y → Weakly-bisimilar i x z
+Transitivity-≈≲ʳ = ∀ {i} {x y z : Delay A ∞} →
+                   x ≈ y → [ i ] z ≳ y → [ i ] x ≈ z
 
 size-preserving-transitivity-≈≲ʳ⇔uninhabited : Transitivity-≈≲ʳ ⇔ ¬ A
 size-preserving-transitivity-≈≲ʳ⇔uninhabited =
@@ -521,9 +423,8 @@ size-preserving-transitivity-≈≲ʳ⇔uninhabited =
   Transitivity-≳≈ˡ  ↝⟨ size-preserving-transitivity-≳≈ˡ⇔uninhabited ⟩□
   ¬ A               □
 
-Transitivity-≈≳ˡ =
-  ∀ {i} {x y z : Delay A ∞} →
-  Weakly-bisimilar i x y → y ≳ z → Weakly-bisimilar i x z
+Transitivity-≈≳ˡ = ∀ {i} {x y z : Delay A ∞} →
+                   [ i ] x ≈ y → y ≳ z → [ i ] x ≈ z
 
 size-preserving-transitivity-≈≳ˡ⇔uninhabited : Transitivity-≈≳ˡ ⇔ ¬ A
 size-preserving-transitivity-≈≳ˡ⇔uninhabited = record

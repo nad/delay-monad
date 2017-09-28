@@ -12,18 +12,16 @@ open import Prelude
 
 mutual
 
-  Delay : ∀ {a} → (Size → Set a) → Size → Set a
-  Delay A i = A i ⊎ ∞Delay A i
+  data Delay {a} (A : Size → Set a) (i : Size) : Set a where
+    now   : A i        → Delay A i
+    later : Delay′ A i → Delay A i
 
-  record ∞Delay {a} (A : Size → Set a) (i : Size) : Set a where
+  record Delay′ {a} (A : Size → Set a) (i : Size) : Set a where
     coinductive
     field
       force : {j : Size< i} → Delay A j
 
-open ∞Delay public
-
-pattern now x   = inj₁ x
-pattern later x = inj₂ x
+open Delay′ public
 
 module _ {a} {A : Size → Set a} where
 
@@ -32,13 +30,13 @@ module _ {a} {A : Size → Set a} where
     -- A non-terminating computation.
 
     never : ∀ {i} → Delay A i
-    never = later ∞never
+    never = later never′
 
-    ∞never : ∀ {i} → ∞Delay A i
-    force ∞never = never
+    never′ : ∀ {i} → Delay′ A i
+    force never′ = never
 
   -- Removes a later constructor, if possible.
 
   drop-later : Delay A ∞ → Delay A ∞
-  drop-later (now x)   = now x
+  drop-later (now   x) = now x
   drop-later (later x) = force x

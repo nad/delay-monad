@@ -40,10 +40,10 @@ mutual
 
     -- Congruences.
 
-    now-cong   : ∀ {k x} → Prog i k (now x) (now x)
-    later-cong : ∀ {k x y} →
-                 ∞Prog i k (force x) (force y) →
-                 Prog i k (later x) (later y)
+    now   : ∀ {k x} → Prog i k (now x) (now x)
+    later : ∀ {k x y} →
+            Prog′ i k (force x) (force y) →
+            Prog i k (later x) (later y)
 
     -- Weak bisimilarity.
 
@@ -62,12 +62,12 @@ mutual
     transP : ∀ {k x y z} →
              Prog i strong x y → Prog i k y z → Prog i k x z
 
-  record ∞Prog (i : Size) (k : Kind) (x y : Delay A ∞) : Set a where
+  record Prog′ (i : Size) (k : Kind) (x y : Delay A ∞) : Set a where
     coinductive
     field
       force : {j : Size< i} → Prog j k x y
 
-open ∞Prog public
+open Prog′ public
 
 ------------------------------------------------------------------------
 -- Completeness
@@ -76,17 +76,17 @@ open ∞Prog public
 -- bisimilarity. Note that these proofs are size-preserving.
 
 complete-strong : ∀ {i x y} →
-                  Strongly-bisimilar i x y → Prog i strong x y
-complete-strong now-cong       = now-cong
-complete-strong (later-cong p) =
-  later-cong λ { .force → complete-strong (force p) }
+                  [ i ] x ∼ y → Prog i strong x y
+complete-strong now       = now
+complete-strong (later p) =
+  later λ { .force → complete-strong (force p) }
 
-complete-weak : ∀ {i x y} → Weakly-bisimilar i x y → Prog i weak x y
-complete-weak now-cong       = now-cong
-complete-weak (laterʳ p)     = laterʳ (complete-weak p)
-complete-weak (laterˡ p)     = laterˡ (complete-weak p)
-complete-weak (later-cong p) =
-  later-cong λ { .force → complete-weak (force p) }
+complete-weak : ∀ {i x y} → [ i ] x ≈ y → Prog i weak x y
+complete-weak now        = now
+complete-weak (laterʳ p) = laterʳ (complete-weak p)
+complete-weak (laterˡ p) = laterˡ (complete-weak p)
+complete-weak (later  p) =
+  later λ { .force → complete-weak (force p) }
 
 ------------------------------------------------------------------------
 -- Soundness
@@ -94,45 +94,45 @@ complete-weak (later-cong p) =
 -- Proof WHNFs.
 
 data WHNF (i : Size) : Kind → Delay A ∞ → Delay A ∞ → Set a where
-  now-cong   : ∀ {k x} → WHNF i k (now x) (now x)
-  later-cong : ∀ {k x y} →
-               ∞Prog i k (force x) (force y) →
-               WHNF i k (later x) (later y)
-  laterʳ     : ∀ {x y} →
-               WHNF i weak x (force y) → WHNF i weak x (later y)
-  laterˡ     : ∀ {x y} →
-               WHNF i weak (force x) y → WHNF i weak (later x) y
+  now    : ∀ {k x} → WHNF i k (now x) (now x)
+  later  : ∀ {k x y} →
+           Prog′ i k (force x) (force y) →
+           WHNF i k (later x) (later y)
+  laterʳ : ∀ {x y} →
+           WHNF i weak x (force y) → WHNF i weak x (later y)
+  laterˡ : ∀ {x y} →
+           WHNF i weak (force x) y → WHNF i weak (later x) y
 
 -- Reflexivity.
 
 reflW : ∀ {i k} x → WHNF i k x x
-reflW (now   x) = now-cong
-reflW (later x) = later-cong λ { .force → reflP (force x) }
+reflW (now   x) = now
+reflW (later x) = later λ { .force → reflP (force x) }
 
 -- Symmetry.
 
 symW : ∀ {i k x y} → WHNF i k x y → WHNF i k y x
-symW now-cong       = now-cong
-symW (later-cong p) = later-cong λ { .force → symP (force p) }
-symW (laterʳ p)     = laterˡ (symW p)
-symW (laterˡ p)     = laterʳ (symW p)
+symW now        = now
+symW (later  p) = later λ { .force → symP (force p) }
+symW (laterʳ p) = laterˡ (symW p)
+symW (laterˡ p) = laterʳ (symW p)
 
 -- Transitivity for strong WHNFs.
 
 trans∼∼W : ∀ {i x y z} →
            WHNF i strong x y → WHNF i strong y z → WHNF i strong x z
-trans∼∼W now-cong       q              = q
-trans∼∼W (later-cong p) (later-cong q) =
-  later-cong λ { .force → transP (force p) (force q) }
+trans∼∼W now       q         = q
+trans∼∼W (later p) (later q) =
+  later λ { .force → transP (force p) (force q) }
 
 -- Strong equality programs can be turned into WHNFs.
 
 whnf∼ : ∀ {i x y} → Prog i strong x y → WHNF i strong x y
-whnf∼ now-cong       = now-cong
-whnf∼ (later-cong p) = later-cong p
-whnf∼ (reflP x)      = reflW x
-whnf∼ (symP p)       = symW (whnf∼ p)
-whnf∼ (transP p q)   = trans∼∼W (whnf∼ p) (whnf∼ q)
+whnf∼ now          = now
+whnf∼ (later p)    = later p
+whnf∼ (reflP x)    = reflW x
+whnf∼ (symP p)     = symW (whnf∼ p)
+whnf∼ (transP p q) = trans∼∼W (whnf∼ p) (whnf∼ q)
 
 -- Strong proof programs are sound with respect to strong
 -- bisimilarity. Note that these proofs are size-preserving.
@@ -140,51 +140,51 @@ whnf∼ (transP p q)   = trans∼∼W (whnf∼ p) (whnf∼ q)
 mutual
 
   sound-strong : ∀ {i x y} →
-                 Prog i strong x y → Strongly-bisimilar i x y
+                 Prog i strong x y → [ i ] x ∼ y
   sound-strong p = soundW-strong (whnf∼ p)
 
   soundW-strong : ∀ {i x y} →
-                  WHNF i strong x y → Strongly-bisimilar i x y
-  soundW-strong now-cong       = now-cong
-  soundW-strong (later-cong p) =
-    later-cong λ { .force → sound-strong (force p) }
+                  WHNF i strong x y → [ i ] x ∼ y
+  soundW-strong now       = now
+  soundW-strong (later p) =
+    later λ { .force → sound-strong (force p) }
 
 -- Another transitivity lemma. This lemma cannot, in general, be made
 -- fully size-preserving (see not-fully-size-preserving below).
 
 trans∼-W : ∀ {i k x y z} →
            WHNF ∞ strong x y → WHNF i k y z → WHNF i k x z
-trans∼-W now-cong       q              = q
-trans∼-W p              (laterʳ q)     = laterʳ (trans∼-W p q)
-trans∼-W (later-cong p) (laterˡ q)     = laterˡ (trans∼-W (whnf∼ (force p)) q)
-trans∼-W (later-cong p) (later-cong q) =
-  later-cong λ { .force → transP (force p) (force q) }
+trans∼-W now       q          = q
+trans∼-W p         (laterʳ q) = laterʳ (trans∼-W p q)
+trans∼-W (later p) (laterˡ q) = laterˡ (trans∼-W (whnf∼ (force p)) q)
+trans∼-W (later p) (later  q) =
+  later λ { .force → transP (force p) (force q) }
 
 -- All fully defined programs can be turned into WHNFs.
 
 whnf : ∀ {i k x y} → Prog ∞ k x y → WHNF i k x y
-whnf now-cong       = now-cong
-whnf (later-cong p) = later-cong p
-whnf (laterʳ p)     = laterʳ (whnf p)
-whnf (laterˡ p)     = laterˡ (whnf p)
-whnf (reflP x)      = reflW x
-whnf (symP p)       = symW (whnf p)
-whnf (transP p q)   = trans∼-W (whnf p) (whnf q)
+whnf now          = now
+whnf (later p)    = later p
+whnf (laterʳ p)   = laterʳ (whnf p)
+whnf (laterˡ p)   = laterˡ (whnf p)
+whnf (reflP x)    = reflW x
+whnf (symP p)     = symW (whnf p)
+whnf (transP p q) = trans∼-W (whnf p) (whnf q)
 
 -- Weak proof programs are sound with respect to weak bisimilarity.
 -- Note that these proofs are /not/ guaranteed to be size-preserving.
 
 mutual
 
-  sound-weak : ∀ {i x y} → Prog ∞ weak x y → Weakly-bisimilar i x y
+  sound-weak : ∀ {i x y} → Prog ∞ weak x y → [ i ] x ≈ y
   sound-weak p = soundW-weak (whnf p)
 
-  soundW-weak : ∀ {i x y} → WHNF ∞ weak x y → Weakly-bisimilar i x y
-  soundW-weak now-cong       = now-cong
-  soundW-weak (laterʳ p)     = laterʳ  (soundW-weak p)
-  soundW-weak (laterˡ p)     = laterˡ  (soundW-weak p)
-  soundW-weak (later-cong p) =
-    later-cong λ { .force → sound-weak (force p) }
+  soundW-weak : ∀ {i x y} → WHNF ∞ weak x y → [ i ] x ≈ y
+  soundW-weak now        = now
+  soundW-weak (laterʳ p) = laterʳ  (soundW-weak p)
+  soundW-weak (laterˡ p) = laterˡ  (soundW-weak p)
+  soundW-weak (later  p) =
+    later λ { .force → sound-weak (force p) }
 
 ------------------------------------------------------------------------
 -- Some negative results
@@ -193,14 +193,14 @@ mutual
 -- size-preserving iff A is uninhabited.
 
 size-preserving⇔uninhabited :
-  (∀ {i x y} → Prog i weak x y → Weakly-bisimilar i x y) ⇔ ¬ A
+  (∀ {i x y} → Prog i weak x y → [ i ] x ≈ y) ⇔ ¬ A
 size-preserving⇔uninhabited = record
-  { to   = (∀ {i x y} → Prog i weak x y → Weakly-bisimilar i x y)  ↝⟨ (λ sound p q → sound (transP (complete-strong p) (complete-weak q))) ⟩
-           Transitivity-∼≈ˡ                                        ↝⟨ _⇔_.to size-preserving-transitivity-∼≈ˡ⇔uninhabited ⟩□
-           ¬ A                                                     □
-  ; from = ¬ A                                                     ↝⟨ uninhabited→trivial ⟩
-           (∀ x y → x ≈ y)                                         ↝⟨ (λ trivial {_ _ _} _ → trivial _ _) ⟩□
-           (∀ {i x y} → Prog i weak x y → Weakly-bisimilar i x y)  □
+  { to   = (∀ {i x y} → Prog i weak x y → [ i ] x ≈ y)  ↝⟨ (λ sound p q → sound (transP (complete-strong p) (complete-weak q))) ⟩
+           Transitivity-∼≈ˡ                             ↝⟨ _⇔_.to size-preserving-transitivity-∼≈ˡ⇔uninhabited ⟩□
+           ¬ A                                          □
+  ; from = ¬ A                                          ↝⟨ uninhabited→trivial ⟩
+           (∀ x y → x ≈ y)                              ↝⟨ (λ trivial {_ _ _} _ → trivial _ _) ⟩□
+           (∀ {i x y} → Prog i weak x y → [ i ] x ≈ y)  □
   }
 
 -- The lemma trans∼-W cannot be made fully size-preserving (assuming
@@ -220,11 +220,11 @@ not-fully-size-preserving trans x = contradiction ∞
 
     never≈now : ∀ {i} → WHNF i weak never (now x)
     never≈now =
-      trans (later-cong {y = record { force = now x }} ∞never∼now)
-            (laterˡ now-cong)
+      trans (later {y = record { force = now x }} never∼now)
+            (laterˡ now)
 
-    ∞never∼now : ∀ {i} → ∞Prog i strong never (now x)
-    force ∞never∼now {j = j} = ⊥-elim (contradiction j)
+    never∼now : ∀ {i} → Prog′ i strong never (now x)
+    force never∼now {j = j} = ⊥-elim (contradiction j)
 
     contradiction : Size → ⊥
     contradiction i = never≉now (never≈now {i = i})
@@ -245,13 +245,13 @@ partially-adapted-counterexample convert x = contradiction ∞
   mutual
 
     now∼→≡now : ∀ {i x y} → Prog i strong (now x) y → y ≡ now x
-    now∼→≡now now-cong     = refl
+    now∼→≡now now          = refl
     now∼→≡now (reflP _)    = refl
     now∼→≡now (symP p)     = ∼now→≡now p
     now∼→≡now (transP p q) rewrite now∼→≡now p = now∼→≡now q
 
     ∼now→≡now : ∀ {i x y} → Prog i strong x (now y) → x ≡ now y
-    ∼now→≡now now-cong     = refl
+    ∼now→≡now now          = refl
     ∼now→≡now (reflP _)    = refl
     ∼now→≡now (symP p)     = now∼→≡now p
     ∼now→≡now (transP p q) rewrite ∼now→≡now q = ∼now→≡now p
@@ -272,11 +272,11 @@ partially-adapted-counterexample convert x = contradiction ∞
 
     never≈Pnow : ∀ {i} → Prog i weak never (now x)
     never≈Pnow =
-      transP (later-cong {y = record { force = now x }} ∞never∼Pnow)
-             (laterˡ now-cong)
+      transP (later {y = record { force = now x }} never∼Pnow)
+             (laterˡ now)
 
-    ∞never∼Pnow : ∀ {i} → ∞Prog i strong never (now x)
-    force ∞never∼Pnow {j = j} = ⊥-elim (contradiction j)
+    never∼Pnow : ∀ {i} → Prog′ i strong never (now x)
+    force never∼Pnow {j = j} = ⊥-elim (contradiction j)
 
     contradiction : Size → ⊥
     contradiction i = never≉Pnow (never≈Pnow {i = i})
@@ -291,18 +291,18 @@ partially-adapted-counterexample convert x = contradiction ∞
 
 exampleP : ∀ {i} → Prog i weak never never
 exampleP {i} =
-  transP (reflP {i = i} never) (later-cong λ { .force → exampleP })
+  transP (reflP {i = i} never) (later λ { .force → exampleP })
 
-example : ∀ {i} → Weakly-bisimilar i never never
+example : ∀ {i} → [ i ] never ≈ never
 example = sound-weak exampleP
 
 -- However, note that the first argument could just as well have been
 -- given the size ∞, in which case transitive-∼≈ works:
 
-counterargument : ∀ {i} → Weakly-bisimilar i never (never {A = A})
+counterargument : ∀ {i} → [ i ] never ≈ never {A = A}
 counterargument =
   transitive-∼≈ (S.reflexive never)
-                (later-cong λ { .force → counterargument })
+                (later λ { .force → counterargument })
 
 -- Are there any applications in which strong and weak bisimilarities
 -- are proved simultaneously? One can observe that, if the first
@@ -310,10 +310,10 @@ counterargument =
 -- (in a size-preserving way):
 
 ≈→∼ : ∀ {i} {x : Delay A ∞} →
-      Weakly-bisimilar i never x → Strongly-bisimilar i never x
-≈→∼ (later-cong p) = later-cong λ { .force → ≈→∼ (force p) }
-≈→∼ (laterˡ p)     = ≈→∼ p
-≈→∼ (laterʳ p)     = later-cong λ { .force → ≈→∼ p }
+      [ i ] never ≈ x → [ i ] never ∼ x
+≈→∼ (later  p) = later λ { .force → ≈→∼ (force p) }
+≈→∼ (laterˡ p) = ≈→∼ p
+≈→∼ (laterʳ p) = later λ { .force → ≈→∼ p }
 
 -- Perhaps one can find some compelling application of the technique
 -- presented above if it can be combined with a lemma like ≈→∼.
