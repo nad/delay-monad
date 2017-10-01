@@ -2,7 +2,7 @@
 -- The expansion relation
 ------------------------------------------------------------------------
 
-{-# OPTIONS --without-K #-}
+{-# OPTIONS --without-K --safe #-}
 
 module Delay-monad.Expansion {a} {A : Set a} where
 

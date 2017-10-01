@@ -9,7 +9,7 @@
 -- corecursive definitions. However, it is unclear if this is ever
 -- useful: the example presented below is rather contrived.
 
-{-# OPTIONS --without-K #-}
+{-# OPTIONS --without-K --safe #-}
 
 module Delay-monad.Transitivity-constructor {a} {A : Set a} where
 

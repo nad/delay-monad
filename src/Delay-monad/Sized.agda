@@ -2,7 +2,7 @@
 -- The delay monad, defined coinductively, with a sized type parameter
 ------------------------------------------------------------------------
 
-{-# OPTIONS --without-K #-}
+{-# OPTIONS --without-K --safe #-}
 
 module Delay-monad.Sized where
 

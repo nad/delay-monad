@@ -2,7 +2,7 @@
 -- Least upper bounds
 ------------------------------------------------------------------------
 
-{-# OPTIONS --without-K #-}
+{-# OPTIONS --without-K --safe #-}
 
 module Delay-monad.Sized.Least-upper-bound where
 

@@ -2,7 +2,7 @@
 -- A partial order
 ------------------------------------------------------------------------
 
-{-# OPTIONS --without-K #-}
+{-# OPTIONS --without-K --safe #-}
 
 open import Prelude hiding (module W)
 

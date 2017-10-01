@@ -2,7 +2,7 @@
 -- A partial order
 ------------------------------------------------------------------------
 
-{-# OPTIONS --without-K #-}
+{-# OPTIONS --without-K --safe #-}
 
 module Delay-monad.Partial-order {a} {A : Set a} where
 
