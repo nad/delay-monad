@@ -24,12 +24,12 @@ open import Delay-monad.Weak-bisimilarity as W
 
 -- An ordering relation.
 --
--- Capretta defines a logically equivalent relation in "General
--- Recursion via Coinductive Types".
+-- Capretta defines a pointwise logically equivalent relation in
+-- "General Recursion via Coinductive Types".
 --
 -- Benton, Kennedy and Varming define a relation that is perhaps
--- logically equivalent in "Some Domain Theory and Denotational
--- Semantics in Coq".
+-- pointwise logically equivalent in "Some Domain Theory and
+-- Denotational Semantics in Coq".
 
 infix 4 [_]_⊑_ [_]_⊑′_ _⊑_ _⊑′_
 
