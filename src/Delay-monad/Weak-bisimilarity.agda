@@ -497,8 +497,9 @@ uninhabited→trivial ¬A (later x) (later y) =
 -- is replaced by strong bisimilarity, and both arguments are
 -- specialised, can be made size-preserving iff A is uninhabited.
 --
--- This lemma is used to prove all the results below (directly or
--- indirectly).
+-- This lemma is used to prove all similar results below (directly or
+-- indirectly), with the exception that an alternative, more direct
+-- proof is also given for one of the results.
 
 Laterˡ⁻¹-∼≈ = ∀ {i} {x : A} →
               [ i ] later (λ { .force → now x }) ∼ never →
@@ -705,3 +706,31 @@ size-preserving-transitivity⇔uninhabited = record
            (∀ x y → x ≈ y)  ↝⟨ (λ trivial {_ _ _ _} _ _ → trivial _ _) ⟩□
            Transitivity     □
   }
+
+-- The following two lemmas provide an alternative proof of one
+-- direction of the previous lemma (with a small change to one of the
+-- types).
+
+-- If there is a transitivity proof that is size-preserving in both
+-- arguments, then weak bisimilarity is trivial.
+
+size-preserving-transitivity→trivial :
+  (∀ {i} x {y z : Delay A ∞} → [ i ] x ≈ y → [ i ] y ≈ z → [ i ] x ≈ z) →
+  ∀ {i} (x y : Delay A ∞) → [ i ] x ≈ y
+size-preserving-transitivity→trivial _≈⟨_⟩_ x y =
+  (x                         ≈⟨ laterʳ (x ∎ʷ) ⟩
+  (later (λ { .force → x })  ≈⟨ later (λ { .force → size-preserving-transitivity→trivial _≈⟨_⟩_ x y }) ⟩
+  (later (λ { .force → y })  ≈⟨ laterˡ (y ∎ʷ) ⟩
+  (y                         ∎ʷ))))
+  where
+  _∎ʷ = reflexive
+
+-- If there is a transitivity proof that is size-preserving in both
+-- arguments, then the carrier type A is not inhabited.
+
+size-preserving-transitivity→uninhabited :
+  (∀ {i} x {y z : Delay A ∞} →
+   [ i ] x ≈ y → [ i ] y ≈ z → [ i ] x ≈ z) →
+  ¬ A
+size-preserving-transitivity→uninhabited trans x =
+  now≉never (size-preserving-transitivity→trivial trans (now x) never)
