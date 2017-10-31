@@ -529,8 +529,6 @@ size-preserving-laterˡ⁻¹-∼≈⇔uninhabited = record
       contradiction i = now≉never (now≈never {i = i})
 
 -- A variant of Laterˡ⁻¹-∼≈ which it is sometimes easier to work with.
--- (Note that λ { .force → now x } stands for an anonymous, named
--- function.)
 
 Laterˡ⁻¹-∼≈′ = ∀ {i} {x : A} →
                [ i ] later (record { force = now x }) ∼ never →

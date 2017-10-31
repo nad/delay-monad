@@ -510,8 +510,7 @@ size-preserving-laterˡ⁻¹-∼≈→uninhabited laterˡ⁻¹-∼≈ x =
     contradiction i = now≉never (now≈never {i = i})
 
 -- A logically equivalent variant of Laterˡ⁻¹-∼≈ which it is sometimes
--- easier to work with. (Note that λ { .force {j = j} → now (x j) }
--- stands for an anonymous, named function.)
+-- easier to work with.
 
 Laterˡ⁻¹-∼≈′ = ∀ {i} (x : ∀ i → A i) →
                [ i ] later (record { force = λ {j} → now (x j) }) ∼ never →
