@@ -10,7 +10,7 @@ open import Equality.Propositional
 open import Logical-equivalence using (_⇔_)
 open import Prelude
 
-open import Function-universe equality-with-J hiding (_∘_)
+open import Function-universe equality-with-J hiding (id; _∘_)
 open import H-level equality-with-J
 
 open import Delay-monad
@@ -301,28 +301,28 @@ laterˡ⁻¹⇔uninhabited = record
 -- The following variants of transitivity can be proved iff A is
 -- uninhabited.
 
-Transitivity-≈≳ = {x y z : Delay A ∞} → x ≈ y → y ≳ z → x ≳ z
-Transitivity-≳≈ = {x y z : Delay A ∞} → x ≳ y → y ≈ z → x ≳ z
+Transitivity-≈≳≳ = {x y z : Delay A ∞} → x ≈ y → y ≳ z → x ≳ z
+Transitivity-≳≈≳ = {x y z : Delay A ∞} → x ≳ y → y ≈ z → x ≳ z
 
-transitive-≈≳⇔uninhabited : Transitivity-≈≳ ⇔ ¬ A
-transitive-≈≳⇔uninhabited = record
-  { to = Transitivity-≈≳  ↝⟨ (λ trans → trans (laterʳ (Weak.reflexive _))) ⟩
-         Laterˡ⁻¹         ↝⟨ _⇔_.to laterˡ⁻¹⇔uninhabited ⟩□
-         ¬ A              □
-  ; from = ¬ A              ↝⟨ uninhabited→trivial ⟩
-           (∀ x y → x ≳ y)  ↝⟨ (λ hyp {_ _ _} _ _ → hyp _ _) ⟩□
-           Transitivity-≈≳  □
+transitive-≈≳≳⇔uninhabited : Transitivity-≈≳≳ ⇔ ¬ A
+transitive-≈≳≳⇔uninhabited = record
+  { to = Transitivity-≈≳≳  ↝⟨ (λ trans → trans (laterʳ (Weak.reflexive _))) ⟩
+         Laterˡ⁻¹          ↝⟨ _⇔_.to laterˡ⁻¹⇔uninhabited ⟩□
+         ¬ A               □
+  ; from = ¬ A               ↝⟨ uninhabited→trivial ⟩
+           (∀ x y → x ≳ y)   ↝⟨ (λ hyp {_ _ _} _ _ → hyp _ _) ⟩□
+           Transitivity-≈≳≳  □
   }
 
-transitive-≳≈⇔uninhabited : Transitivity-≳≈ ⇔ ¬ A
-transitive-≳≈⇔uninhabited = record
-  { to = Transitivity-≳≈  ↝⟨ (λ trans {_ y} lx≳y → later⁻¹ {y = record { force = y }}
-                                                           (trans lx≳y (laterʳ (Weak.reflexive _)))) ⟩
-         Laterˡ⁻¹         ↝⟨ _⇔_.to laterˡ⁻¹⇔uninhabited ⟩□
-         ¬ A              □
-  ; from = ¬ A              ↝⟨ uninhabited→trivial ⟩
-           (∀ x y → x ≳ y)  ↝⟨ (λ hyp {_ _ _} _ _ → hyp _ _) ⟩□
-           Transitivity-≳≈  □
+transitive-≳≈≳⇔uninhabited : Transitivity-≳≈≳ ⇔ ¬ A
+transitive-≳≈≳⇔uninhabited = record
+  { to = Transitivity-≳≈≳  ↝⟨ (λ trans {_ y} lx≳y → later⁻¹ {y = record { force = y }}
+                                                            (trans lx≳y (laterʳ (Weak.reflexive _)))) ⟩
+         Laterˡ⁻¹          ↝⟨ _⇔_.to laterˡ⁻¹⇔uninhabited ⟩□
+         ¬ A               □
+  ; from = ¬ A               ↝⟨ uninhabited→trivial ⟩
+           (∀ x y → x ≳ y)   ↝⟨ (λ hyp {_ _ _} _ _ → hyp _ _) ⟩□
+           Transitivity-≳≈≳  □
   }
 
 ------------------------------------------------------------------------
@@ -394,6 +394,22 @@ size-preserving-transitivityˡ⇔uninhabited = record
            Transitivityˡ    □
   }
 
+-- There is a transitivity proof that preserves the size of both
+-- arguments iff A is uninhabited.
+
+Transitivity = ∀ {i} {x y z : Delay A ∞} →
+               [ i ] x ≳ y → [ i ] y ≳ z → [ i ] x ≳ z
+
+size-preserving-transitivity⇔uninhabited : Transitivity ⇔ ¬ A
+size-preserving-transitivity⇔uninhabited = record
+  { to   = Transitivity   ↝⟨ id ⟩
+           Transitivityˡ  ↝⟨ _⇔_.to size-preserving-transitivityˡ⇔uninhabited ⟩□
+           ¬ A            □
+  ; from = ¬ A              ↝⟨ uninhabited→trivial ⟩
+           (∀ x y → x ≳ y)  ↝⟨ (λ trivial {_ _ _ _} _ _ → trivial _ _) ⟩□
+           Transitivity     □
+  }
+
 -- There is a variant of transitive-≳≈ that preserves the size of the
 -- first argument iff A is uninhabited.
 
@@ -410,7 +426,24 @@ size-preserving-transitivity-≳≈ˡ⇔uninhabited = record
            Transitivity-≳≈ˡ  □
   }
 
--- More lemmas of a similar kind.
+-- There is a variant of transitive-≳≈ that preserves the size of both
+-- arguments iff A is uninhabited.
+
+Transitivity-≳≈ = ∀ {i} {x y z : Delay A ∞} →
+                  [ i ] x ≳ y → [ i ] y ≈ z → [ i ] x ≈ z
+
+size-preserving-transitivity-≳≈⇔uninhabited : Transitivity-≳≈ ⇔ ¬ A
+size-preserving-transitivity-≳≈⇔uninhabited = record
+  { to   = Transitivity-≳≈   ↝⟨ id ⟩
+           Transitivity-≳≈ˡ  ↝⟨ _⇔_.to size-preserving-transitivity-≳≈ˡ⇔uninhabited ⟩
+           ¬ A               □
+  ; from = ¬ A              ↝⟨ Weak.uninhabited→trivial ⟩
+           (∀ x y → x ≈ y)  ↝⟨ (λ trivial {_ _ _ _} _ _ → trivial _ _) ⟩□
+           Transitivity-≳≈  □
+  }
+
+-- There is a variant of transitive-≈≲ that preserves the size of the
+-- second argument iff A is uninhabited.
 
 Transitivity-≈≲ʳ = ∀ {i} {x y z : Delay A ∞} →
                    x ≈ y → [ i ] z ≳ y → [ i ] x ≈ z
@@ -422,6 +455,24 @@ size-preserving-transitivity-≈≲ʳ⇔uninhabited =
                               } ⟩
   Transitivity-≳≈ˡ  ↝⟨ size-preserving-transitivity-≳≈ˡ⇔uninhabited ⟩□
   ¬ A               □
+
+-- There is a variant of transitive-≈≲ that preserves the size of both
+-- arguments iff A is uninhabited.
+
+Transitivity-≈≲ = ∀ {i} {x y z : Delay A ∞} →
+                  [ i ] x ≈ y → [ i ] z ≳ y → [ i ] x ≈ z
+
+size-preserving-transitivity-≈≲⇔uninhabited : Transitivity-≈≲ ⇔ ¬ A
+size-preserving-transitivity-≈≲⇔uninhabited =
+  Transitivity-≈≲  ↝⟨ record { to   = λ trans x≳y y≈z → Weak.symmetric (trans (Weak.symmetric y≈z) x≳y)
+                             ; from = λ trans x≈y y≲z → Weak.symmetric (trans y≲z (Weak.symmetric x≈y))
+                             } ⟩
+  Transitivity-≳≈  ↝⟨ size-preserving-transitivity-≳≈⇔uninhabited ⟩□
+  ¬ A              □
+
+-- There is a transitivity-like proof taking weak bisimilarity and
+-- expansion to weak bisimilarity that preserves the size of the first
+-- argument iff A is uninhabited.
 
 Transitivity-≈≳ˡ = ∀ {i} {x y z : Delay A ∞} →
                    [ i ] x ≈ y → y ≳ z → [ i ] x ≈ z
