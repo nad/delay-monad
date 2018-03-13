@@ -32,10 +32,10 @@ module _ {a} {A : Set a} where
 
     -- A non-terminating computation.
 
-    never : Delay A ∞
+    never : ∀ {i} → Delay A i
     never = later never′
 
-    never′ : Delay′ A ∞
+    never′ : ∀ {i} → Delay′ A i
     force never′ = never
 
   -- Removes a later constructor, if possible.
