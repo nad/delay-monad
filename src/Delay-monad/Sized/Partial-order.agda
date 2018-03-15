@@ -4,11 +4,11 @@
 
 {-# OPTIONS --without-K --safe #-}
 
-open import Prelude hiding (module W)
+open import Prelude
 
 module Delay-monad.Sized.Partial-order {a} {A : Size → Set a} where
 
-open import Equality.Propositional
+open import Equality.Propositional as E
 open import Logical-equivalence using (_⇔_)
 
 open import Bijection equality-with-J using (_↔_)
@@ -19,9 +19,11 @@ open import H-level.Closure equality-with-J
 open import Monad equality-with-J
 
 open import Delay-monad.Sized
-open import Delay-monad.Sized.Strong-bisimilarity using ([_]_∼_)
-open import Delay-monad.Sized.Weak-bisimilarity as W
-  using ([_]_≈_; _≈_; force)
+open import Delay-monad.Sized.Bisimilarity as B
+  hiding (reflexive; symmetric; laterˡ⁻¹; laterʳ⁻¹)
+open import Delay-monad.Sized.Bisimilarity.Alternative
+open import Delay-monad.Sized.Bisimilarity.Negative
+import Delay-monad.Sized.Termination as T
 
 -- An ordering relation.
 --
@@ -85,7 +87,7 @@ _⇓_ = Terminates ∞
 -- The notion of termination defined here is pointwise isomorphic to
 -- the one defined in Delay-monad.Sized.Weak-bisimilarity.
 
-⇓↔⇓ : ∀ {i x y} → Terminates i x y ↔ W.Terminates i x y
+⇓↔⇓ : ∀ {i x y} → Terminates i x y ↔ T.Terminates i x y
 ⇓↔⇓ = record
   { surjection = record
     { logical-equivalence = record
@@ -97,29 +99,29 @@ _⇓_ = Terminates ∞
   ; left-inverse-of = from∘to
   }
   where
-  to : ∀ {i x y} → Terminates i x y → W.Terminates i x y
-  to now        = W.now
-  to (laterʳ p) = W.laterʳ (to p)
+  to : ∀ {i x y} → Terminates i x y → T.Terminates i x y
+  to now        = now
+  to (laterʳ p) = laterʳ (to p)
 
-  from : ∀ {i x y} → W.Terminates i x y → Terminates i x y
-  from W.now        = now
-  from (W.laterʳ p) = laterʳ (from p)
+  from : ∀ {i x y} → T.Terminates i x y → Terminates i x y
+  from now        = now
+  from (laterʳ p) = laterʳ (from p)
 
   from∘to : ∀ {i x y} (p : Terminates i x y) → from (to p) ≡ p
   from∘to now        = refl
   from∘to (laterʳ p) = cong laterʳ (from∘to p)
 
-  to∘from : ∀ {i x y} (p : W.Terminates i x y) → to (from p) ≡ p
-  to∘from W.now        = refl
-  to∘from (W.laterʳ p) = cong W.laterʳ (to∘from p)
+  to∘from : ∀ {i x y} (p : T.Terminates i x y) → to (from p) ≡ p
+  to∘from now        = refl
+  to∘from (laterʳ p) = cong laterʳ (to∘from p)
 
 -- Terminates i is pointwise isomorphic to Terminates ∞.
 
 Terminates↔⇓ : ∀ {i x y} → Terminates i x y ↔ x ⇓ y
 Terminates↔⇓ {i} {x} {y} =
   Terminates i x y    ↝⟨ ⇓↔⇓ ⟩
-  W.Terminates i x y  ↝⟨ W.Terminates↔⇓ ⟩
-  x W.⇓ y             ↝⟨ inverse ⇓↔⇓ ⟩□
+  T.Terminates i x y  ↝⟨ T.Terminates↔⇓ ⟩
+  x T.⇓ y             ↝⟨ inverse ⇓↔⇓ ⟩□
   x ⇓ y               □
 
 -- The computation never is smaller than or equal to all other
@@ -156,27 +158,27 @@ later-cong⁻¹ p = laterʳ⁻¹ (laterˡ⁻¹ p)
 -- Weak bisimilarity is contained in the ordering relation.
 
 ≈→⊑ : ∀ {i x y} → [ i ] x ≈ y → [ i ] x ⊑ y
-≈→⊑ W.now        = now
-≈→⊑ (W.later  p) = later-cong λ { .force → ≈→⊑ (force p) }
-≈→⊑ (W.laterˡ p) = laterˡ λ { .force → ≈→⊑ p }
-≈→⊑ (W.laterʳ p) = laterʳ (≈→⊑ p)
+≈→⊑ now        = now
+≈→⊑ (later  p) = later-cong λ { .force → ≈→⊑ (force p) }
+≈→⊑ (laterˡ p) = laterˡ λ { .force → ≈→⊑ p }
+≈→⊑ (laterʳ p) = laterʳ (≈→⊑ p)
 
 -- The ordering relation is antisymmetric (with respect to weak
 -- bisimilarity).
 
 antisymmetric : ∀ {i x y} →
                 [ i ] x ⊑ y → [ i ] y ⊑ x → [ i ] x ≈ y
-antisymmetric {x = now   x} {y = now  .x} now        _          = W.now
-antisymmetric {x = now   x} {y = later y} (laterʳ p) q          = W.laterʳ (_↔_.to ⇓↔⇓ p)
-antisymmetric {x = later x} {y = now   y} p          (laterʳ q) = W.laterˡ (W.symmetric (_↔_.to ⇓↔⇓ q))
+antisymmetric {x = now   x} {y = now  .x} now        _          = now
+antisymmetric {x = now   x} {y = later y} (laterʳ p) q          = laterʳ (_↔_.to ⇓↔⇓ p)
+antisymmetric {x = later x} {y = now   y} p          (laterʳ q) = laterˡ (B.symmetric (_↔_.to ⇓↔⇓ q))
 antisymmetric {x = later x} {y = later y} p          q          =
-  W.later λ { .force → antisymmetric (later-cong⁻¹ p) (later-cong⁻¹ q) }
+  later λ { .force → antisymmetric (later-cong⁻¹ p) (later-cong⁻¹ q) }
 
 -- An alternative characterisation of weak bisimilarity.
 
 ≈⇔⊑×⊒ : ∀ {i x y} → [ i ] x ≈ y ⇔ ([ i ] x ⊑ y × [ i ] y ⊑ x)
 ≈⇔⊑×⊒ = record
-  { to   = λ p → ≈→⊑ p , ≈→⊑ (W.symmetric p)
+  { to   = λ p → ≈→⊑ p , ≈→⊑ (B.symmetric p)
   ; from = uncurry antisymmetric
   }
 
@@ -207,7 +209,7 @@ transitive (laterˡ p) q          = laterˡ λ { .force →
 
 ⇓-respects-≈ : ∀ {i x y z} → Terminates i x z → x ≈ y → Terminates i y z
 ⇓-respects-≈ now        q = ≈→⊑ q
-⇓-respects-≈ (laterʳ p) q = ⇓-respects-≈ p (W.laterˡ⁻¹ q)
+⇓-respects-≈ (laterʳ p) q = ⇓-respects-≈ p (B.laterˡ⁻¹ q)
 
 -- The ordering relation respects weak bisimilarity.
 
@@ -215,12 +217,12 @@ transitive-≈⊑ : ∀ {i x y z} → [ i ] x ≈ y → y ⊑ z → [ i ] x ⊑ 
 transitive-≈⊑ p q = transitive (≈→⊑ p) q
 
 transitive-⊑≈ : ∀ {i x y z} → [ i ] x ⊑ y → y ≈ z → [ i ] x ⊑ z
-transitive-⊑≈ p          W.now        = p
-transitive-⊑≈ (laterʳ p) (W.later  q) = laterʳ (transitive-⊑≈ p (force q))
-transitive-⊑≈ (laterˡ p) q            = laterˡ λ { .force →
-                                          transitive-⊑≈ (force p) q }
-transitive-⊑≈ (laterʳ p) (W.laterˡ q) = transitive-⊑≈ p q
-transitive-⊑≈ p          (W.laterʳ q) = laterʳ (transitive-⊑≈ p q)
+transitive-⊑≈ p          now        = p
+transitive-⊑≈ (laterʳ p) (later  q) = laterʳ (transitive-⊑≈ p (force q))
+transitive-⊑≈ (laterˡ p) q          = laterˡ λ { .force →
+                                        transitive-⊑≈ (force p) q }
+transitive-⊑≈ (laterʳ p) (laterˡ q) = transitive-⊑≈ p q
+transitive-⊑≈ p          (laterʳ q) = laterʳ (transitive-⊑≈ p q)
 
 -- If there is a transitivity-like function that produces an ordering
 -- proof from one weak bisimilarity proof and one ordering proof, in
@@ -235,14 +237,14 @@ size-preserving-transitivity-≈⊑ʳ→uninhabited :
 size-preserving-transitivity-≈⊑ʳ→uninhabited =
   Transitivity-≈⊑ʳ                                                ↝⟨ (λ trans {i} x →
 
-      [ i ] later (record { force = λ {j} → now (x j) }) ∼ never        ↝⟨ ≈→⊑ ∘ W.∼→≈ ⟩
-      [ i ] later (record { force = λ {j} → now (x j) }) ⊑ never        ↝⟨ trans (W.laterʳ W.now) ⟩
+      [ i ] later (record { force = λ {j} → now (x j) }) ∼ never        ↝⟨ ≈→⊑ ∘ ∼→ ⟩
+      [ i ] later (record { force = λ {j} → now (x j) }) ⊑ never        ↝⟨ trans (laterʳ now) ⟩
       [ i ] now (x ∞) ⊑ never                                           ↝⟨ _↔_.to ⇓↔⇓ ⟩□
       [ i ] now (x ∞) ≈ never                                           □) ⟩
 
-  W.Laterˡ⁻¹-∼≈′                                                  ↝⟨ _⇔_.from W.size-preserving-laterˡ⁻¹-∼≈⇔size-preserving-laterˡ⁻¹-∼≈′ ⟩
+  Laterˡ⁻¹-∼≈′                                                    ↝⟨ _⇔_.from size-preserving-laterˡ⁻¹-∼≈⇔size-preserving-laterˡ⁻¹-∼≈′ ⟩
 
-  W.Laterˡ⁻¹-∼≈                                                   ↝⟨ W.size-preserving-laterˡ⁻¹-∼≈→uninhabited ⟩
+  Laterˡ⁻¹-∼≈                                                     ↝⟨ size-preserving-laterˡ⁻¹-∼≈→uninhabited ⟩
 
   ¬ (∀ i → A i)                                                   □
 
@@ -251,7 +253,7 @@ size-preserving-transitivity-≈⊑ʳ→uninhabited =
 
 uninhabited→size-preserving-transitivity-≈⊑ʳ : ¬ A ∞ → Transitivity-≈⊑ʳ
 uninhabited→size-preserving-transitivity-≈⊑ʳ =
-  ¬ A ∞             ↝⟨ W.uninhabited→trivial ⟩
+  ¬ A ∞             ↝⟨ uninhabited→trivial ⟩
   (∀ x y → x ≈ y)   ↝⟨ (λ trivial _ _ → ≈→⊑ (trivial _ _)) ⟩
   (∀ x y → x ⊑ y)   ↝⟨ (λ trivial {_ _ _ _} _ _ → trivial _ _) ⟩□
   Transitivity-≈⊑ʳ  □
@@ -274,7 +276,7 @@ size-preserving-transitivityʳ→uninhabited =
 
 uninhabited→size-preserving-transitivityʳ : ¬ A ∞ → Transitivityʳ
 uninhabited→size-preserving-transitivityʳ =
-  ¬ A ∞            ↝⟨ W.uninhabited→trivial ⟩
+  ¬ A ∞            ↝⟨ uninhabited→trivial ⟩
   (∀ x y → x ≈ y)  ↝⟨ (λ trivial _ _ → ≈→⊑ (trivial _ _)) ⟩
   (∀ x y → x ⊑ y)  ↝⟨ (λ trivial {_ _ _ _} _ _ → trivial _ _) ⟩□
   Transitivityʳ    □
@@ -292,14 +294,14 @@ size-preserving-transitivity-⊑≈ʳ→uninhabited :
 size-preserving-transitivity-⊑≈ʳ→uninhabited =
   Transitivity-⊑≈ʳ                                                ↝⟨ (λ trans {i} x →
 
-      [ i ] later (record { force = λ {j} → now (x j) }) ∼ never        ↝⟨ W.∼→≈ ⟩
+      [ i ] later (record { force = λ {j} → now (x j) }) ∼ never        ↝⟨ ∼→ ⟩
       [ i ] later (record { force = λ {j} → now (x j) }) ≈ never        ↝⟨ trans (laterʳ now) ⟩
       [ i ] now (x ∞) ⊑ never                                           ↝⟨ _↔_.to ⇓↔⇓ ⟩□
       [ i ] now (x ∞) ≈ never                                           □) ⟩
 
-  W.Laterˡ⁻¹-∼≈′                                                  ↝⟨ _⇔_.from W.size-preserving-laterˡ⁻¹-∼≈⇔size-preserving-laterˡ⁻¹-∼≈′ ⟩
+  Laterˡ⁻¹-∼≈′                                                    ↝⟨ _⇔_.from size-preserving-laterˡ⁻¹-∼≈⇔size-preserving-laterˡ⁻¹-∼≈′ ⟩
 
-  W.Laterˡ⁻¹-∼≈                                                   ↝⟨ W.size-preserving-laterˡ⁻¹-∼≈→uninhabited ⟩
+  Laterˡ⁻¹-∼≈                                                     ↝⟨ size-preserving-laterˡ⁻¹-∼≈→uninhabited ⟩
 
   ¬ (∀ i → A i)                                                   □
 
@@ -308,7 +310,7 @@ size-preserving-transitivity-⊑≈ʳ→uninhabited =
 
 uninhabited→size-preserving-transitivity-⊑≈ʳ : ¬ A ∞ → Transitivity-⊑≈ʳ
 uninhabited→size-preserving-transitivity-⊑≈ʳ =
-  ¬ A ∞             ↝⟨ W.uninhabited→trivial ⟩
+  ¬ A ∞             ↝⟨ uninhabited→trivial ⟩
   (∀ x y → x ≈ y)   ↝⟨ (λ trivial _ _ → ≈→⊑ (trivial _ _)) ⟩
   (∀ x y → x ⊑ y)   ↝⟨ (λ trivial {_ _ _ _} _ _ → trivial _ _) ⟩□
   Transitivity-⊑≈ʳ  □
@@ -340,33 +342,33 @@ uninhabited→size-preserving-transitivity-⊑≈ʳ =
 
 -- An alternative characterisation of weak bisimilarity.
 
-≈⇔≈₂ : {x y : Delay A ∞} → x ≈ y ⇔ x W.≈₂ y
+≈⇔≈₂ : {x y : Delay A ∞} → x ≈ y ⇔ x ≈₂ y
 ≈⇔≈₂ {x} {y} =
   x ≈ y                                                  ↝⟨ ≈⇔⊑×⊒ ⟩
   x ⊑ y × y ⊑ x                                          ↝⟨ ⊑⇔⇓→⇓ ×-cong ⊑⇔⇓→⇓ ⟩
   (∀ z → x ⇓ z → y ⇓ z) × (∀ z → y ⇓ z → x ⇓ z)          ↝⟨ ∀-cong _ (λ _ → →-cong _ (from-bijection ⇓↔⇓) (from-bijection ⇓↔⇓))
                                                               ×-cong
                                                             ∀-cong _ (λ _ → →-cong _ (from-bijection ⇓↔⇓) (from-bijection ⇓↔⇓)) ⟩
-  (∀ z → x W.⇓ z → y W.⇓ z) × (∀ z → y W.⇓ z → x W.⇓ z)  ↝⟨ record { to   = uncurry λ to from z → record { to = to z; from = from z }
+  (∀ z → x T.⇓ z → y T.⇓ z) × (∀ z → y T.⇓ z → x T.⇓ z)  ↝⟨ record { to   = uncurry λ to from z → record { to = to z; from = from z }
                                                                    ; from = λ hyp → _⇔_.to ∘ hyp , _⇔_.from ∘ hyp
                                                                    } ⟩□
-  (∀ z → x W.⇓ z ⇔ y W.⇓ z)                              □
+  (∀ z → x T.⇓ z ⇔ y T.⇓ z)                              □
 
 -- If A ∞ is a set, then every computation is weakly bisimilar to
 -- never or now something (assuming excluded middle and
 -- extensionality).
 
 ⇑⊎⇓ :
-  Excluded-middle a → Extensionality a a →
-  Is-set (A ∞) → (x : Delay A ∞) → never ≈ x ⊎ ∃ λ y → x W.⇓ y
+  Excluded-middle a → E.Extensionality a a →
+  Is-set (A ∞) → (x : Delay A ∞) → never ≈ x ⊎ ∃ λ y → x T.⇓ y
 ⇑⊎⇓ em ext A-set x =
   ⊎-map (_⇔_.from ≈⇔≈₂) id $
   Excluded-middle→Double-negation-elimination em
     (⊎-closure-propositional
        (λ { x⇑ (y , x⇓y) →
-            W.now≉never (now y  W.≈⟨ x⇓y ⟩
-                         x      W.≈⟨ W.symmetric (_⇔_.from ≈⇔≈₂ x⇑) ⟩∎
-                         never  ∎) })
-       (W.≈₂-propositional ext A-set)
-       (W.∃-Terminates-propositional A-set))
-    (⊎-map (_⇔_.to ≈⇔≈₂) id ⟨$⟩ W.¬¬[⇑⊎⇓] x)
+            now≉never (now y  ≈⟨ x⇓y ⟩
+                       x      ≈⟨ B.symmetric (_⇔_.from ≈⇔≈₂ x⇑) ⟩∎
+                       never  ∎) })
+       (≈₂-propositional ext A-set)
+       (T.∃-Terminates-propositional A-set))
+    (⊎-map (_⇔_.to ≈⇔≈₂) id ⟨$⟩ T.¬¬[⇑⊎⇓] x)

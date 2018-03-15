@@ -11,7 +11,8 @@
 
 {-# OPTIONS --without-K --safe #-}
 
-module Delay-monad.Transitivity-constructor {a} {A : Set a} where
+module Delay-monad.Bisimilarity.Transitivity-constructor
+  {a} {A : Set a} where
 
 open import Equality.Propositional
 open import Logical-equivalence using (_⇔_)
@@ -20,8 +21,8 @@ open import Prelude
 open import Function-universe equality-with-J hiding (Kind)
 
 open import Delay-monad
-open import Delay-monad.Strong-bisimilarity as S
-open import Delay-monad.Weak-bisimilarity
+open import Delay-monad.Bisimilarity hiding (never≉now)
+open import Delay-monad.Bisimilarity.Negative
 
 ------------------------------------------------------------------------
 -- Proof programs
@@ -55,7 +56,7 @@ mutual
     -- Note that if A is inhabited, then there is no size-preserving
     -- transitivity-like proof taking strong bisimilarity and weak
     -- bisimilarity to weak bisimilarity (see
-    -- Delay-monad.Weak-bisimilarity.size-preserving-transitivity-∼≈ˡ⇔uninhabited).
+    -- Delay-monad.Bisimilarity.Negative.size-preserving-transitivity-∼≈ˡ⇔uninhabited).
 
     reflP  : ∀ {k} x → Prog i k x x
     symP   : ∀ {k x y} → Prog i k x y → Prog i k y x
@@ -286,7 +287,7 @@ partially-adapted-counterexample convert x = contradiction ∞
 
 -- Note the use of a strong bisimilarity program of size i as the
 -- first argument to transitivity in the following example; this is
--- not supported by transitive-∼≈, which requires the first argument
+-- not supported by transitive-∼ˡ, which requires the first argument
 -- to have size ∞.
 
 exampleP : ∀ {i} → Prog i weak never never
@@ -297,28 +298,21 @@ example : ∀ {i} → [ i ] never ≈ never
 example = sound-weak exampleP
 
 -- However, note that the first argument could just as well have been
--- given the size ∞, in which case transitive-∼≈ works:
+-- given the size ∞, in which case transitive-∼ˡ works:
 
 counterargument : ∀ {i} → [ i ] never ≈ never {A = A}
 counterargument =
-  transitive-∼≈ (S.reflexive never)
+  transitive-∼ˡ (reflexive never)
                 (later λ { .force → counterargument })
 
 -- Are there any applications in which strong and weak bisimilarities
 -- are proved simultaneously? One can observe that, if the first
 -- argument is never, then weak bisimilarity is contained in strong
--- (in a size-preserving way):
-
-≈→∼ : ∀ {i} {x : Delay A ∞} →
-      [ i ] never ≈ x → [ i ] never ∼ x
-≈→∼ (later  p) = later λ { .force → ≈→∼ (force p) }
-≈→∼ (laterˡ p) = ≈→∼ p
-≈→∼ (laterʳ p) = later λ { .force → ≈→∼ p }
-
--- Perhaps one can find some compelling application of the technique
--- presented above if it can be combined with a lemma like ≈→∼.
--- However, it is unclear if such a combination is possible: the
--- soundness proof above relies on the fact that strong bisimilarity
--- programs contain no weak bisimilarity programs (in particular, no
+-- (in a size-preserving way), as witnessed by →∼-neverˡ. Perhaps one
+-- can find some compelling application of the technique presented
+-- above if it can be combined with a lemma like →∼-neverˡ. However,
+-- it is unclear if such a combination is possible: the soundness
+-- proof above relies on the fact that strong bisimilarity programs
+-- contain no weak bisimilarity programs (in particular, no
 -- transitivity proofs with a weak bisimilarity as the second
 -- argument).

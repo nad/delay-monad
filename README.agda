@@ -18,22 +18,32 @@ module README where
 
 import Delay-monad
 
--- Strong bisimilarity.
+-- A type used to index a combined definition of strong and weak
+-- bisimilarity and expansion.
 
-import Delay-monad.Strong-bisimilarity
+import Delay-monad.Bisimilarity.Kind
 
--- Weak bisimilarity.
+-- A combined definition of strong and weak bisimilarity and
+-- expansion, along with various properties.
 
-import Delay-monad.Weak-bisimilarity
+import Delay-monad.Bisimilarity
+
+-- Termination.
+
+import Delay-monad.Termination
+
+-- Alternative definitions of weak bisimilarity.
+
+import Delay-monad.Bisimilarity.Alternative
+
+-- Some negative results related to weak bisimilarity and expansion.
+
+import Delay-monad.Bisimilarity.Negative
 
 -- An example showing that transitivity-like proofs that are not
 -- size-preserving can sometimes be used in a compositional way.
 
-import Delay-monad.Transitivity-constructor
-
--- The expansion relation.
-
-import Delay-monad.Expansion
+import Delay-monad.Bisimilarity.Transitivity-constructor
 
 -- A partial order.
 
@@ -59,13 +69,22 @@ import Delay-monad.Always
 
 import Delay-monad.Sized
 
--- Strong bisimilarity.
+-- A combined definition of strong and weak bisimilarity and
+-- expansion, along with various properties.
 
-import Delay-monad.Sized.Strong-bisimilarity
+import Delay-monad.Sized.Bisimilarity
 
--- Weak bisimilarity.
+-- Termination.
 
-import Delay-monad.Sized.Weak-bisimilarity
+import Delay-monad.Sized.Termination
+
+-- Alternative definitions of weak bisimilarity.
+
+import Delay-monad.Sized.Bisimilarity.Alternative
+
+-- Some negative results related to weak bisimilarity and expansion.
+
+import Delay-monad.Sized.Bisimilarity.Negative
 
 -- A partial order.
 
