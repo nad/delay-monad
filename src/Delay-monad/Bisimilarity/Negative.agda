@@ -20,32 +20,20 @@ open import Delay-monad.Termination
 -- Lemmas stating that functions of certain types can be defined iff A
 -- is uninhabited
 
--- A special case of a variant of laterˡ⁻¹ for (fully defined)
--- expansion can be defined iff A is uninhabited.
+-- The computation now x is an expansion of
+-- later (record { force = now x }) for every x : A iff A is
+-- uninhabited.
 
-Laterˡ⁻¹-≳′ = ∀ {x : A} →
-              later (record { force = now x }) ≳
-              later (record { force = now x }) →
-              now x ≳ later (record { force = now x })
+Now≳later-now = (x : A) → now x ≳ later (record { force = now x })
 
-laterˡ⁻¹-≳′⇔uninhabited : Laterˡ⁻¹-≳′ ⇔ ¬ A
-laterˡ⁻¹-≳′⇔uninhabited = record
-  { to   = Laterˡ⁻¹-≳′                      ↝⟨ (λ hyp _ → hyp) ⟩
-           (∀ x → y x ≳ y x → now x ≳ y x)  ↝⟨ (λ hyp x → hyp x (reflexive _)) ⟩
-           (∀ x → now x ≳ y x)              ↝⟨ (λ hyp x → now-x≵y x (hyp x)) ⟩□
-           ¬ A                              □
+now≳later-now⇔uninhabited : Now≳later-now ⇔ ¬ A
+now≳later-now⇔uninhabited = record
+  { to   = Now≳later-now  ↝⟨ (λ hyp x → case hyp x of λ ()) ⟩□
+           ¬ A            □
   ; from = ¬ A              ↝⟨ uninhabited→trivial ⟩
-           (∀ x y → x ≳ y)  ↝⟨ (λ hyp {_} _ → hyp _ _) ⟩□
-           Laterˡ⁻¹-≳′      □
+           (∀ x y → x ≳ y)  ↝⟨ (λ hyp _ → hyp _ _) ⟩□
+           Now≳later-now    □
   }
-  where
-  module _ (x : A) where
-
-    y : Delay A ∞
-    y = later (record { force = now x })
-
-    now-x≵y : ¬ now x ≳ y
-    now-x≵y ()
 
 -- A variant of laterˡ⁻¹ for (fully defined) expansion can be defined
 -- iff A is uninhabited.
@@ -54,9 +42,9 @@ Laterˡ⁻¹-≳ = ∀ {x} {y : Delay A ∞} → later x ≳ y → force x ≳ y
 
 laterˡ⁻¹-≳⇔uninhabited : Laterˡ⁻¹-≳ ⇔ ¬ A
 laterˡ⁻¹-≳⇔uninhabited = record
-  { to   = Laterˡ⁻¹-≳   ↝⟨ (λ hyp → hyp) ⟩
-           Laterˡ⁻¹-≳′  ↝⟨ _⇔_.to laterˡ⁻¹-≳′⇔uninhabited ⟩
-           ¬ A          □
+  { to   = Laterˡ⁻¹-≳     ↝⟨ (λ hyp _ → hyp (reflexive _)) ⟩
+           Now≳later-now  ↝⟨ _⇔_.to now≳later-now⇔uninhabited ⟩□
+           ¬ A            □
   ; from = ¬ A              ↝⟨ uninhabited→trivial ⟩
            (∀ x y → x ≳ y)  ↝⟨ (λ hyp {_ _} _ → hyp _ _) ⟩□
            Laterˡ⁻¹-≳       □

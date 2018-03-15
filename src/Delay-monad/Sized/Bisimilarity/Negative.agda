@@ -22,28 +22,23 @@ open import Delay-monad.Sized.Termination
 -- Lemmas stating that functions of certain types cannot be defined if
 -- ∀ i → A i is inhabited
 
--- If a special case of a variant of laterˡ⁻¹ for (fully defined)
--- expansion can be defined, then ∀ i → A i is uninhabited.
+-- An abbreviation. (Note that, because pattern-matching lambdas like
+-- the one in this definition are—at least at the time of
+-- writing—compared by "name", Agda rejects the code that one gets if
+-- this abbreviation is inlined below.)
 
-Laterˡ⁻¹-≳′ = (x : ∀ i → A i) →
-              later (record { force = λ {j} → now (x j) }) ≳
-              later (record { force = λ {j} → now (x j) }) →
-              now (x ∞) ≳ later (record { force = λ {j} → now (x j) })
+later-now : (∀ i → A i) → ∀ {i} → Delay A i
+later-now x = later λ { .force {j} → now (x j) }
 
-laterˡ⁻¹-≳′→uninhabited : Laterˡ⁻¹-≳′ → ¬ (∀ i → A i)
-laterˡ⁻¹-≳′→uninhabited =
-  Laterˡ⁻¹-≳′                          ↔⟨⟩
-  (∀ x → y x ≳ y x → now (x ∞) ≳ y x)  ↝⟨ (λ hyp x → hyp x (reflexive _)) ⟩
-  (∀ x → now (x ∞) ≳ y x)              ↝⟨ (λ hyp x → now-x≵y x (hyp x)) ⟩□
-  ¬ (∀ i → A i)                        □
-  where
-  module _ (x : ∀ i → A i) where
+-- If now (x ∞) is an expansion of later-now x for every
+-- x : ∀ i → A i, then ∀ i → A i is uninhabited.
 
-    y : Delay A ∞
-    y = later (record { force = λ {j} → now (x j) })
+Now≳later-now = (x : ∀ i → A i) → now (x ∞) ≳ later-now x
 
-    now-x≵y : ¬ now (x ∞) ≳ y
-    now-x≵y ()
+now≳later-now→uninhabited : Now≳later-now → ¬ (∀ i → A i)
+now≳later-now→uninhabited =
+  Now≳later-now  ↝⟨ (λ hyp x → case hyp x of λ ()) ⟩□
+  ¬ (∀ i → A i)  □
 
 -- If a variant of laterˡ⁻¹ for (fully defined) expansion can be
 -- defined, then ∀ i → A i is uninhabited.
@@ -52,8 +47,8 @@ Laterˡ⁻¹-≳ = ∀ {x} {y : Delay A ∞} → later x ≳ y → force x ≳ y
 
 laterˡ⁻¹-≳→uninhabited : Laterˡ⁻¹-≳ → ¬ (∀ i → A i)
 laterˡ⁻¹-≳→uninhabited =
-  Laterˡ⁻¹-≳     ↝⟨ (λ hyp _ → hyp) ⟩
-  Laterˡ⁻¹-≳′    ↝⟨ laterˡ⁻¹-≳′→uninhabited ⟩□
+  Laterˡ⁻¹-≳     ↝⟨ (λ hyp _ → hyp (reflexive _)) ⟩
+  Now≳later-now  ↝⟨ now≳later-now→uninhabited ⟩□
   ¬ (∀ i → A i)  □
 
 -- If the following variants of transitivity can be proved, then
@@ -70,14 +65,10 @@ transitive-≈≳≳→uninhabited =
 
 transitive-≳≈≳→uninhabited : Transitivity-≳≈≳ → ¬ (∀ i → A i)
 transitive-≳≈≳→uninhabited =
-  Transitivity-≳≈≳                                 ↝⟨ (λ trans x ln≳ln → later⁻¹ {y = λ { .force → y x }}
-                                                                                 (trans ln≳ln (laterʳ (reflexive _)))) ⟩
-  ((x : ∀ i → A i) → y x ≳ y x → now (x ∞) ≳ y x)  ↝⟨ (λ hyp x _ → case hyp x (reflexive _) of λ ()) ⟩
-  Laterˡ⁻¹-≳′                                      ↝⟨ laterˡ⁻¹-≳′→uninhabited ⟩□
-  ¬ (∀ i → A i)                                    □
-  where
-  y : (x : ∀ i → A i) → ∀ {i} → Delay A i
-  y x = later (λ { .force {j} → now (x j) })
+  Transitivity-≳≈≳  ↝⟨ (λ trans x → later⁻¹ {y = λ { .force → later-now x }}
+                                            (trans (reflexive _) (laterʳ (reflexive _)))) ⟩
+  Now≳later-now     ↝⟨ now≳later-now→uninhabited ⟩□
+  ¬ (∀ i → A i)     □
 
 ------------------------------------------------------------------------
 -- Lemmas stating that certain size-preserving functions cannot be
@@ -429,13 +420,13 @@ size-preserving-transitivity-≈≳ˡ→uninhabited =
 -- Lemmas stating that certain types are inhabited if A ∞ is
 -- uninhabited
 
--- If A ∞ is uninhabited, then Laterˡ⁻¹-≳′ is inhabited.
+-- If A ∞ is uninhabited, then Now≳later-now is inhabited.
 
-uninhabited→laterˡ⁻¹-≳′ : ¬ A ∞ → Laterˡ⁻¹-≳′
-uninhabited→laterˡ⁻¹-≳′ =
+uninhabited→now≳later-now : ¬ A ∞ → Now≳later-now
+uninhabited→now≳later-now =
   ¬ A ∞            ↝⟨ uninhabited→trivial ⟩
-  (∀ x y → x ≳ y)  ↝⟨ (λ trivial _ _ → trivial _ _) ⟩□
-  Laterˡ⁻¹-≳′      □
+  (∀ x y → x ≳ y)  ↝⟨ (λ trivial _ → trivial _ _) ⟩□
+  Now≳later-now    □
 
 -- If A ∞ is uninhabited, then a variant of laterˡ⁻¹ for (fully
 -- defined) expansion can be defined.
