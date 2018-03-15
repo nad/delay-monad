@@ -170,8 +170,7 @@ mutual
                      later x ≈ y → y ≈ z → [ i ] later x ≈ z
   transitive-later p          (later  q) = later λ { .force →
                                              transitive (later⁻¹ p) (force q) }
-  transitive-later p          (laterʳ q) = later λ { .force →
-                                             transitive (laterˡ⁻¹ p) q }
+  transitive-later p          (laterʳ q) = laterʳ (transitive p q)
   transitive-later p          (laterˡ q) = transitive-later (laterʳ⁻¹ p) q
   transitive-later (laterˡ p) q          = laterˡ (transitive p q)
 
