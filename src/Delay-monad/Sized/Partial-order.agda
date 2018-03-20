@@ -341,6 +341,9 @@ uninhabited→size-preserving-transitivity-⊑≈ʳ =
                        from (force x) (λ z q → p z (laterʳ q)) }
 
 -- An alternative characterisation of weak bisimilarity.
+--
+-- Capretta proves a similar result in "General Recursion via
+-- Coinductive Types".
 
 ≈⇔≈₂ : {x y : Delay A ∞} → x ≈ y ⇔ x ≈₂ y
 ≈⇔≈₂ {x} {y} =

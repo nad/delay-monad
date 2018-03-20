@@ -20,10 +20,11 @@ open import Delay-monad.Sized
 open import Delay-monad.Sized.Bisimilarity
 open import Delay-monad.Sized.Termination
 
--- An alternative definition of weak bisimilarity (basically the one
--- used in the paper "Partiality, Revisited: The Partiality Monad as a
--- Quotient Inductive-Inductive Type" by Altenkirch, Danielsson and
--- Kraus).
+-- An alternative definition of weak bisimilarity (discussed by
+-- Capretta in "General Recursion via Coinductive Types", and
+-- basically the one used in the paper "Partiality, Revisited: The
+-- Partiality Monad as a Quotient Inductive-Inductive Type" by
+-- Altenkirch, Danielsson and Kraus).
 --
 -- This definition is pointwise logically equivalent to the one above,
 -- see Delay-monad.Sized.Partial-order.≈⇔≈₂.
