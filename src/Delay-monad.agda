@@ -10,6 +10,7 @@ open import Equality.Propositional
 open import Prelude
 
 open import Bijection equality-with-J using (_↔_)
+open import Conat
 
 -- The delay monad.
 
@@ -57,3 +58,10 @@ module _ {a} {A : Set a} where
       }
     ; left-inverse-of = λ { (now _) → refl; (later _) → refl }
     }
+
+  -- The number of steps in a computation (the number of later
+  -- constructors).
+
+  steps : ∀ {i} → Delay A i → Conat i
+  steps (now   _) = zero
+  steps (later x) = suc λ { .force → steps (x .force) }

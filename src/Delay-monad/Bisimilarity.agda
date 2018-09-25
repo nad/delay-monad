@@ -7,6 +7,7 @@
 
 module Delay-monad.Bisimilarity where
 
+open import Conat using (zero; suc; force; [_]_≤_)
 open import Equality.Propositional as E using (_≡_)
 open import Logical-equivalence using (_⇔_)
 open import Prelude
@@ -389,6 +390,54 @@ module _ {a} {A : Set a} where
   _∼⟨⟩_ : ∀ {k i} x {y} →
            [ i ] x ⟨ k ⟩ y → [ i ] x ⟨ k ⟩ y
   _ ∼⟨⟩ x≈y = x≈y
+
+  ------------------------------------------------------------------------
+  -- Some results related to the steps function
+
+  -- If x and y are strongly bisimilar, then they contain the same
+  -- number of later constructors.
+
+  steps-cong :
+    ∀ {x y i} → [ i ] x ∼ y → Conat.[ i ] steps x ∼ steps y
+  steps-cong now       = zero
+  steps-cong (later p) = suc λ { .force → steps-cong (p .force) }
+
+  -- If y is an expansion of x, then it contains at least as many
+  -- later constructors as x.
+
+  steps-mono :
+    ∀ {x y i} → [ i ] x ≲ y → [ i ] steps x ≤ steps y
+  steps-mono now                        = zero
+  steps-mono (later p)                  = suc λ { .force →
+                                            steps-mono (p .force) }
+  steps-mono (laterˡ {x = x} {y = y} p) =
+    steps y           ≤⟨ steps-mono p ⟩
+    steps (x .force)  ≤⟨ Conat.≤suc ⟩
+    steps (later x)   ∎≤
+    where
+    open Conat using (step-≤; _∎≤)
+
+  -- The computation y is an expansion of x iff x and y are weakly
+  -- bisimilar and y contains at least as many later constructors
+  -- as x.
+
+  ≲⇔≈×steps≤steps :
+    ∀ {i x y} →
+    [ i ] x ≲ y ⇔ [ i ] x ≈ y × [ i ] steps x ≤ steps y
+  ≲⇔≈×steps≤steps = record
+    { to   = λ p → symmetric (≳→ p) , steps-mono p
+    ; from = uncurry from
+    }
+    where
+    from :
+      ∀ {x y i} →
+      [ i ] x ≈ y →
+      [ i ] steps x ≤ steps y →
+      [ i ] x ≲ y
+    from {now _}             p zero    = ≈→-now (symmetric p)
+    from {later _} {now _}   _ ()
+    from {later _} {later _} p (suc q) =
+      later λ { .force → from (later⁻¹ p) (q .force) }
 
   ----------------------------------------------------------------------
   -- Some results related to negation

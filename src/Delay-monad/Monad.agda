@@ -6,6 +6,7 @@
 
 module Delay-monad.Monad where
 
+open import Conat using (zero; suc; force)
 open import Equality.Propositional
 open import Prelude
 
@@ -108,3 +109,25 @@ now      >>=-cong  q = q _
 later  p >>=-cong  q = later λ { .force → force p >>=-cong q }
 laterˡ p >>=-cong  q = laterˡ (p >>=-cong q)
 laterʳ p >>=-cong  q = laterʳ (p >>=-cong q)
+
+------------------------------------------------------------------------
+-- Some lemmas relating monadic combinators to steps
+
+-- Use of map′ does not affect the number of steps in the computation.
+
+steps-map′ :
+  ∀ {i a b} {A : Set a} {B : Set b} {f : A → B}
+  (x : Delay A ∞) →
+  Conat.[ i ] steps (map′ f x) ∼ steps x
+steps-map′ (now x)   = zero
+steps-map′ (later x) = suc λ { .force → steps-map′ (x .force) }
+
+-- Use of _⟨$⟩_ does not affect the number of steps in the
+-- computation.
+
+steps-⟨$⟩ :
+  ∀ {i ℓ} {A B : Set ℓ} {f : A → B}
+  (x : Delay A ∞) →
+  Conat.[ i ] steps (f ⟨$⟩ x) ∼ steps x
+steps-⟨$⟩ (now x)   = zero
+steps-⟨$⟩ (later x) = suc λ { .force → steps-⟨$⟩ (x .force) }
