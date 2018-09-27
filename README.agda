@@ -28,6 +28,12 @@ import Delay-monad.Bisimilarity.Kind
 
 import Delay-monad.Bisimilarity
 
+-- A variant of expansion that can be used to state that one
+-- computation is at most a certain positive factor "slower" than
+-- another.
+
+import Delay-monad.Strong-expansion
+
 -- Termination.
 
 import Delay-monad.Termination
