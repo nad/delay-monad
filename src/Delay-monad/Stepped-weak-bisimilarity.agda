@@ -255,7 +255,7 @@ transitive-≳∼ = λ where
 
 transitive-≈∼ :
   ∀ {i mˡ mʳ nˡ nʳ x y z} →
-  [ i ∣ mˡ ∣ mʳ ∣ nˡ ∣ nʳ ] x ≈ y → B.[ ∞ ] y ∼ z →
+  [ i ∣ mˡ ∣ mʳ ∣ nˡ ∣ nʳ ] x ≈ y → y B.∼ z →
   [ i ∣ mˡ ∣ mʳ ∣ nˡ ∣ nʳ ] x ≈ z
 transitive-≈∼ = λ where
   now        now       → now
