@@ -488,3 +488,139 @@ steps-+-*ˡ = steps-+-*ʳ ∘ symmetric-≈
   x B.≈ y ×
   [ ∞ ] steps y ≤ steps x ×
   [ ∞ ] steps x ≤ n + (⌜ 1 ⌝ + m) * steps y  □
+
+-- The right-to-left direction of ≳⇔≳×steps≤steps can be made
+-- size-preserving iff A is uninhabited.
+
+≳×steps≤steps→≳⇔uninhabited :
+  (∀ {i m n x y} →
+   B.[ i ] x ≳ y ×
+   [ i ] steps x ≤ n + (⌜ 1 ⌝ + m) * steps y →
+   [ i ∣ m ∣ n ] x ≳ y)
+    ⇔
+  ¬ A
+≳×steps≤steps→≳⇔uninhabited = record
+  { to   = flip to
+  ; from =
+    ¬ A                                           ↝⟨ (λ ¬A {_ _ _ _ _} → ∼→≈ (B.uninhabited→trivial ¬A _ _)) ⟩
+
+    (∀ {i m n x y} → [ i ∣ m ∣ n ] x ≳ y)         ↝⟨ (λ hyp {_ _ _ _ _} _ → hyp {_}) ⟩□
+
+    (∀ {i m n x y} →
+     B.[ i ] x ≳ y ×
+     [ i ] steps x ≤ n + (⌜ 1 ⌝ + m) * steps y →
+     [ i ∣ m ∣ n ] x ≳ y)                         □
+  }
+  where
+  strengthen-≳now :
+    ∀ {i m n x y} →
+    [ i ∣ m ∣ n ] x ≳ now y →
+    [ ∞ ∣ m ∣ n ] x ≳ now y
+  strengthen-≳now now        = now
+  strengthen-≳now (laterˡ p) = laterˡ (strengthen-≳now p)
+
+  to :
+    A →
+    ¬ (∀ {i m n x y} →
+       B.[ i ] x ≳ y ×
+       [ i ] steps x ≤ n + (⌜ 1 ⌝ + m) * steps y →
+       [ i ∣ m ∣ n ] x ≳ y)
+  to x =
+    (∀ {i m n x y} →
+     B.[ i ] x ≳ y ×
+     [ i ] steps x ≤ n + (⌜ 1 ⌝ + m) * steps y →
+     [ i ∣ m ∣ n ] x ≳ y)                                              ↝⟨ (λ hyp → curry hyp) ⟩
+
+    (∀ {i m n} →
+     B.[ i ] f m ≳ now x →
+     [ i ] steps (f m) ≤ n + zero →
+     [ i ∣ zero ∣ n ] f m ≳ now x)                                     ↝⟨ (λ hyp {_ _ _} p → hyp (≳now _) (complicate p)) ⟩
+
+    (∀ {i m n} → [ i ] ⌜ m ⌝ ≤ n → [ i ∣ zero ∣ n ] f m ≳ now x)       ↝⟨ strengthen-≳now ∘_ ⟩
+
+    (∀ {i m n} → [ i ] ⌜ m ⌝ ≤ n → [ ∞ ∣ zero ∣ n ] f m ≳ now x)       ↝⟨ (λ hyp {_ _ _} p → steps-+-*ʳ (hyp p)) ⟩
+
+    (∀ {i m n} → [ i ] ⌜ m ⌝ ≤ n → [ ∞ ] steps (f m) ≤ n + zero)       ↝⟨ (λ hyp {_ _ _} p → simplify (hyp p)) ⟩
+
+    (∀ {i m n} → [ i ] ⌜ m ⌝ ≤ n → [ ∞ ] ⌜ m ⌝ ≤ n)                    ↝⟨ (λ hyp → hyp) ⟩
+
+    (∀ {i} → [ i ] ⌜ 2 ⌝ ≤ ⌜ 1 ⌝ → [ ∞ ] ⌜ 2 ⌝ ≤ ⌜ 1 ⌝)                ↝⟨ (λ { hyp p → hyp p }) ⟩
+
+    (∀ {i} {j : Size< i} → [ j ] ⌜ 2 ⌝ ≤ ⌜ 1 ⌝ → [ i ] ⌜ 2 ⌝ ≤ ⌜ 1 ⌝)  ↝⟨ Conat.no-strengthening-≤-21 ⟩□
+
+    ⊥                                                                  □
+    where
+    f : ∀ {i} → ℕ → Delay A i
+    f zero    = now x
+    f (suc n) = later λ { .force → f n }
+
+    ≳now : ∀ {i} n → B.[ i ] f n ≳ now x
+    ≳now zero    = now
+    ≳now (suc n) = laterˡ (≳now n)
+
+    ∼steps : ∀ {i} n → Conat.[ i ] ⌜ n ⌝ ∼ steps (f n)
+    ∼steps zero    = zero
+    ∼steps (suc n) = suc λ { .force → ∼steps n }
+
+    complicate :
+      ∀ {m n i} → [ i ] ⌜ m ⌝ ≤ n → [ i ] steps (f m) ≤ n + zero
+    complicate {m} {n} p =
+      steps (f m) ∼⟨ Conat.symmetric-∼ (∼steps m) ⟩≤
+      ⌜ m ⌝       ≤⟨ p ⟩
+      n           ∼⟨ Conat.symmetric-∼ (Conat.+-right-identity _) ⟩≤
+      n + zero    ∎≤
+
+    simplify :
+      ∀ {m n i} → [ i ] steps (f m) ≤ n + zero → [ i ] ⌜ m ⌝ ≤ n
+    simplify {m} {n} p =
+      ⌜ m ⌝        ∼⟨ ∼steps m ⟩≤
+      steps (f m)  ≤⟨ p ⟩
+      n + zero     ∼⟨ Conat.+-right-identity _ ⟩≤
+      n            ∎≤
+
+-- The right-to-left direction of ≈⇔≈×steps≤steps² can be made
+-- size-preserving iff A is uninhabited.
+
+≈×steps≤steps²→≈⇔uninhabited :
+  (∀ {i mˡ mʳ nˡ nʳ x y} →
+   B.[ i ] x ≈ y ×
+   [ i ] steps x ≤ nˡ + (⌜ 1 ⌝ + mˡ) * steps y ×
+   [ i ] steps y ≤ nʳ + (⌜ 1 ⌝ + mʳ) * steps x →
+   [ i ∣ mˡ ∣ mʳ ∣ nˡ ∣ nʳ ] x ≈ y)
+    ⇔
+  ¬ A
+≈×steps≤steps²→≈⇔uninhabited = record
+  { to =
+    (∀ {i mˡ mʳ nˡ nʳ x y} →
+     B.[ i ] x ≈ y ×
+     [ i ] steps x ≤ nˡ + (⌜ 1 ⌝ + mˡ) * steps y ×
+     [ i ] steps y ≤ nʳ + (⌜ 1 ⌝ + mʳ) * steps x →
+     [ i ∣ mˡ ∣ mʳ ∣ nˡ ∣ nʳ ] x ≈ y)               ↝⟨ (λ { hyp (p , q) → hyp (B.≳→ p , q , lemma (B.steps-mono p)) }) ⟩
+
+    (∀ {i m n x y} →
+     B.[ i ] x ≳ y ×
+     [ i ] steps x ≤ n + (⌜ 1 ⌝ + m) * steps y →
+     [ i ∣ m ∣ n ] x ≳ y)                           ↝⟨ _⇔_.to ≳×steps≤steps→≳⇔uninhabited ⟩□
+
+    ¬ A                                             □
+  ; from =
+    ¬ A                                                        ↝⟨ (λ ¬A {_ _ _ _ _} → ∼→≈ (B.uninhabited→trivial ¬A _ _)) ⟩
+
+    (∀ {i mˡ mʳ nˡ nʳ x y} → [ i ∣ mˡ ∣ mʳ ∣ nˡ ∣ nʳ ] x ≈ y)  ↝⟨ (λ hyp {_ _ _ _ _ _ _} _ → hyp {_}) ⟩□
+
+    (∀ {i mˡ mʳ nˡ nʳ x y} →
+     B.[ i ] x ≈ y ×
+     [ i ] steps x ≤ nˡ + (⌜ 1 ⌝ + mˡ) * steps y ×
+     [ i ] steps y ≤ nʳ + (⌜ 1 ⌝ + mʳ) * steps x →
+     [ i ∣ mˡ ∣ mʳ ∣ nˡ ∣ nʳ ] x ≈ y)                          □
+  }
+  where
+  lemma :
+    ∀ {m n i} →
+    [ i ] m ≤ n →
+    [ i ] m ≤ (⌜ 1 ⌝ + ⌜ 0 ⌝) * n
+  lemma {m} {n} p =
+    m                    ≤⟨ p ⟩
+    n                    ∼⟨ Conat.symmetric-∼ (Conat.*-left-identity _) ⟩≤
+    ⌜ 1 ⌝ * n            ∼⟨ Conat.symmetric-∼ (Conat.+-right-identity _) Conat.*-cong (_ ∎∼) ⟩≤
+    (⌜ 1 ⌝ + ⌜ 0 ⌝) * n  ∎≤
