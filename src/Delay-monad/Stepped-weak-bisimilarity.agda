@@ -529,26 +529,24 @@ steps-+-*ˡ = steps-+-*ʳ ∘ symmetric-≈
     (∀ {i m n x y} →
      B.[ i ] x ≳ y ×
      [ i ] steps x ≤ n + (⌜ 1 ⌝ + m) * steps y →
-     [ i ∣ m ∣ n ] x ≳ y)                                              ↝⟨ (λ hyp → curry hyp) ⟩
+     [ i ∣ m ∣ n ] x ≳ y)                                         ↝⟨ (λ hyp → curry hyp) ⟩
 
     (∀ {i m n} →
      B.[ i ] f m ≳ now x →
      [ i ] steps (f m) ≤ n + zero →
-     [ i ∣ zero ∣ n ] f m ≳ now x)                                     ↝⟨ (λ hyp {_ _ _} p → hyp (≳now _) (complicate p)) ⟩
+     [ i ∣ zero ∣ n ] f m ≳ now x)                                ↝⟨ (λ hyp {_ _ _} p → hyp (≳now _) (complicate p)) ⟩
 
-    (∀ {i m n} → [ i ] ⌜ m ⌝ ≤ n → [ i ∣ zero ∣ n ] f m ≳ now x)       ↝⟨ strengthen-≳now ∘_ ⟩
+    (∀ {i m n} → [ i ] ⌜ m ⌝ ≤ n → [ i ∣ zero ∣ n ] f m ≳ now x)  ↝⟨ strengthen-≳now ∘_ ⟩
 
-    (∀ {i m n} → [ i ] ⌜ m ⌝ ≤ n → [ ∞ ∣ zero ∣ n ] f m ≳ now x)       ↝⟨ (λ hyp {_ _ _} p → steps-+-*ʳ (hyp p)) ⟩
+    (∀ {i m n} → [ i ] ⌜ m ⌝ ≤ n → [ ∞ ∣ zero ∣ n ] f m ≳ now x)  ↝⟨ (λ hyp {_ _ _} p → steps-+-*ʳ (hyp p)) ⟩
 
-    (∀ {i m n} → [ i ] ⌜ m ⌝ ≤ n → [ ∞ ] steps (f m) ≤ n + zero)       ↝⟨ (λ hyp {_ _ _} p → simplify (hyp p)) ⟩
+    (∀ {i m n} → [ i ] ⌜ m ⌝ ≤ n → [ ∞ ] steps (f m) ≤ n + zero)  ↝⟨ (λ hyp {_ _ _} p → simplify (hyp p)) ⟩
 
-    (∀ {i m n} → [ i ] ⌜ m ⌝ ≤ n → [ ∞ ] ⌜ m ⌝ ≤ n)                    ↝⟨ (λ hyp → hyp) ⟩
+    (∀ {i m n} → [ i ] ⌜ m ⌝ ≤ n → [ ∞ ] ⌜ m ⌝ ≤ n)               ↝⟨ (λ hyp → hyp) ⟩
 
-    (∀ {i} → [ i ] ⌜ 2 ⌝ ≤ ⌜ 1 ⌝ → [ ∞ ] ⌜ 2 ⌝ ≤ ⌜ 1 ⌝)                ↝⟨ (λ { hyp p → hyp p }) ⟩
+    (∀ {i} → [ i ] ⌜ 2 ⌝ ≤ ⌜ 1 ⌝ → [ ∞ ] ⌜ 2 ⌝ ≤ ⌜ 1 ⌝)           ↝⟨ Conat.no-strengthening-≤-21 ⟩□
 
-    (∀ {i} {j : Size< i} → [ j ] ⌜ 2 ⌝ ≤ ⌜ 1 ⌝ → [ i ] ⌜ 2 ⌝ ≤ ⌜ 1 ⌝)  ↝⟨ Conat.no-strengthening-≤-21 ⟩□
-
-    ⊥                                                                  □
+    ⊥                                                             □
     where
     f : ∀ {i} → ℕ → Delay A i
     f zero    = now x
