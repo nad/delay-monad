@@ -50,7 +50,7 @@ mutual
 
   record [_∣_∣_∣_∣_]_≈′_
            (i : Size) (mˡ mʳ nˡ nʳ : Conat ∞)
-           (x : Delay A ∞) (y : Delay A ∞) : Set a where
+           (x y : Delay A ∞) : Set a where
     coinductive
     field
       force : {j : Size< i} → [ j ∣ mˡ ∣ mʳ ∣ nˡ ∣ nʳ ] x ≈ y
