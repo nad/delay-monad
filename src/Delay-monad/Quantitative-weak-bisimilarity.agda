@@ -5,7 +5,7 @@
 
 {-# OPTIONS --without-K --safe #-}
 
-module Delay-monad.Stepped-weak-bisimilarity {a} {A : Set a} where
+module Delay-monad.Quantitative-weak-bisimilarity {a} {A : Set a} where
 
 open import Conat
   using (Conat; zero; suc; force; ⌜_⌝; _+_; _*_;
@@ -25,12 +25,12 @@ open import Delay-monad.Bisimilarity as B
 
 mutual
 
-  -- Stepped weak bisimilarity. [ ∞ ∣ mˡ ∣ mʳ ∣ nˡ ∣ nʳ ] x ≈ y is a
-  -- variant of x B.≈ y for which the number of later constructors
-  -- in x is bounded by nˡ plus 1 + mˡ times the number of later
-  -- constructors in y, and the number of later constructors in y is
-  -- bounded by nʳ plus 1 + mʳ times the number of later constructors
-  -- in x (see ≈⇔≈×steps≤steps² below).
+  -- Quantitative weak bisimilarity. [ ∞ ∣ mˡ ∣ mʳ ∣ nˡ ∣ nʳ ] x ≈ y
+  -- is a variant of x B.≈ y for which the number of later
+  -- constructors in x is bounded by nˡ plus 1 + mˡ times the number
+  -- of later constructors in y, and the number of later constructors
+  -- in y is bounded by nʳ plus 1 + mʳ times the number of later
+  -- constructors in x (see ≈⇔≈×steps≤steps² below).
 
   infix 4 [_∣_∣_∣_∣_]_≈_ [_∣_∣_∣_∣_]_≈′_
 
@@ -67,7 +67,7 @@ infix 4 [_∣_∣_]_≈_ [_∣_∣_]_≈′_
 [_∣_∣_]_≈′_ : Size → Conat ∞ → Conat ∞ → Delay A ∞ → Delay A ∞ → Set a
 [ i ∣ mˡ ∣ mʳ ] x ≈′ y = [ i ∣ mˡ ∣ mʳ ∣ zero ∣ zero ] x ≈′ y
 
--- Stepped expansion.
+-- Quantitative expansion.
 
 infix 4 [_∣_∣_]_≳_ [_∣_∣_]_≳′_ [_∣_]_≳_ [_∣_]_≳′_
 
@@ -83,7 +83,7 @@ infix 4 [_∣_∣_]_≳_ [_∣_∣_]_≳′_ [_∣_]_≳_ [_∣_]_≳′_
 [_∣_]_≳′_ : Size → Conat ∞ → Delay A ∞ → Delay A ∞ → Set a
 [ i ∣ m ] x ≳′ y = [ i ∣ m ∣ zero ] x ≳′ y
 
--- The converse of stepped expansion.
+-- The converse of quantitative expansion.
 
 infix 4 [_∣_∣_]_≲_ [_∣_∣_]_≲′_ [_∣_]_≲_ [_∣_]_≲′_
 
@@ -141,14 +141,14 @@ weakenʳ :
   [ i ∣ mˡ ∣ mʳ ∣ nˡ ∣ nʳ′ ] x ≈ y
 weakenʳ p = weakenˡʳ (_ ∎≤) p
 
--- Strong bisimilarity is contained in stepped weak bisimilarity.
+-- Strong bisimilarity is contained in quantitative weak bisimilarity.
 
 ∼→≈ : ∀ {i mˡ mʳ nˡ nʳ x y} →
       B.[ i ] x ∼ y → [ i ∣ mˡ ∣ mʳ ∣ nˡ ∣ nʳ ] x ≈ y
 ∼→≈ now       = now
 ∼→≈ (later p) = later λ { .force → ∼→≈ (p .force) }
 
--- Stepped expansion is contained in expansion.
+-- Quantitative expansion is contained in expansion.
 
 ≳→≳ : ∀ {i m n x y} →
       [ i ∣ m ∣ n ] x ≳ y → B.[ i ] x ≳ y
@@ -156,7 +156,7 @@ weakenʳ p = weakenˡʳ (_ ∎≤) p
 ≳→≳ (later p)  = later λ { .force → ≳→≳ (p .force) }
 ≳→≳ (laterˡ p) = laterˡ (≳→≳ p)
 
--- Stepped weak bisimilarity is contained in weak bisimilarity.
+-- Quantitative weak bisimilarity is contained in weak bisimilarity.
 
 ≈→≈ : ∀ {i mˡ mʳ nˡ nʳ x y} →
       [ i ∣ mˡ ∣ mʳ ∣ nˡ ∣ nʳ ] x ≈ y → B.[ i ] x ≈ y
@@ -165,7 +165,7 @@ weakenʳ p = weakenˡʳ (_ ∎≤) p
 ≈→≈ (laterˡ p) = laterˡ (≈→≈ p)
 ≈→≈ (laterʳ p) = laterʳ (≈→≈ p)
 
--- In some cases expansion is contained in stepped expansion.
+-- In some cases expansion is contained in quantitative expansion.
 
 ≳→≳-steps :
   ∀ {m x y i} → B.[ i ] x ≳ y → [ i ∣ m ∣ steps x ] x ≳ y
@@ -179,7 +179,7 @@ weakenʳ p = weakenˡʳ (_ ∎≤) p
     steps (later x)      ≤⟨ Conat.m≤m+n ⟩
     steps (later x) + m  ∎≤
 
--- In some cases weak bisimilarity is contained in stepped weak
+-- In some cases weak bisimilarity is contained in quantitative weak
 -- bisimilarity.
 
 ≈→≈-steps :
@@ -201,7 +201,7 @@ weakenʳ p = weakenˡʳ (_ ∎≤) p
     steps (later y)       ≤⟨ Conat.m≤m+n ⟩
     steps (later y) + mʳ  ∎≤
 
--- In some cases stepped weak bisimilarity is contained in strong
+-- In some cases quantitative weak bisimilarity is contained in strong
 -- bisimilarity.
 
 never≈→∼ :
@@ -225,13 +225,13 @@ never≈→∼ (laterʳ p) = later λ { .force → never≈→∼ p }
 ------------------------------------------------------------------------
 -- Reflexivity, symmetry/antisymmetry, transitivity
 
--- Stepped weak bisimilarity is reflexive.
+-- Quantitative weak bisimilarity is reflexive.
 
 reflexive-≈ : ∀ {i mˡ mʳ nˡ nʳ} x → [ i ∣ mˡ ∣ mʳ ∣ nˡ ∣ nʳ ] x ≈ x
 reflexive-≈ (now _)   = now
 reflexive-≈ (later x) = later λ { .force → reflexive-≈ (x .force) }
 
--- Stepped weak bisimilarity is symmetric (in a certain sense).
+-- Quantitative weak bisimilarity is symmetric (in a certain sense).
 
 symmetric-≈ :
   ∀ {i mˡ mʳ nˡ nʳ x y} →
@@ -325,8 +325,8 @@ _ ∼⟨⟩ˢ x≈y = x≈y
 ------------------------------------------------------------------------
 -- Some results related to the steps function
 
--- If y is a stepped expansion of x, then it contains at least as many
--- later constructors as x.
+-- If y is a quantitative expansion of x, then it contains at least as
+-- many later constructors as x.
 
 steps-mono :
   ∀ {i m n x y} → [ i ∣ m ∣ n ] x ≲ y → [ i ] steps x ≤ steps y

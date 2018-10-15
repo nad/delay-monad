@@ -31,7 +31,7 @@ import Delay-monad.Bisimilarity
 -- A variant of weak bisimilarity that can be used to relate the
 -- number of steps in two computations.
 
-import Delay-monad.Stepped-weak-bisimilarity
+import Delay-monad.Quantitative-weak-bisimilarity
 
 -- Termination.
 
