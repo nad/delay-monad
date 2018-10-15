@@ -489,6 +489,15 @@ steps-+-*ˡ = steps-+-*ʳ ∘ symmetric-≈
   [ ∞ ] steps y ≤ steps x ×
   [ ∞ ] steps x ≤ n + (⌜ 1 ⌝ + m) * steps y  □
 
+-- The left-to-right direction of ≳⇔≳×steps≤steps can be made
+-- size-preserving.
+
+≳→≳×steps≤steps :
+  ∀ {i m n x y} →
+  [ i ∣ m ∣ n ] x ≳ y →
+  B.[ i ] x ≳ y × [ i ] steps x ≤ n + (⌜ 1 ⌝ + m) * steps y
+≳→≳×steps≤steps x≳y = ≳→≳ x≳y , steps-+-*ʳ x≳y
+
 -- The right-to-left direction of ≳⇔≳×steps≤steps can be made
 -- size-preserving iff A is uninhabited.
 
@@ -575,6 +584,17 @@ steps-+-*ˡ = steps-+-*ʳ ∘ symmetric-≈
       steps (f m)  ≤⟨ p ⟩
       n + zero     ∼⟨ Conat.+-right-identity _ ⟩≤
       n            ∎≤
+
+-- The left-to-right direction of ≈⇔≈×steps≤steps² can be made
+-- size-preserving.
+
+≈→≈×steps≤steps² :
+  ∀ {i mˡ mʳ nˡ nʳ x y} →
+  [ ∞ ∣ mˡ ∣ mʳ ∣ nˡ ∣ nʳ ] x ≈ y →
+  B.[ i ] x ≈ y ×
+  [ i ] steps x ≤ nˡ + (⌜ 1 ⌝ + mˡ) * steps y ×
+  [ i ] steps y ≤ nʳ + (⌜ 1 ⌝ + mʳ) * steps x
+≈→≈×steps≤steps² x≈y = ≈→≈ x≈y , steps-+-*ʳ x≈y , steps-+-*ˡ x≈y
 
 -- The right-to-left direction of ≈⇔≈×steps≤steps² can be made
 -- size-preserving iff A is uninhabited.
