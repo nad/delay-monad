@@ -312,7 +312,7 @@ size-preserving-transitivity-⊑≈ʳ⇔uninhabited = record
   to (laterʳ p) z q          = laterʳ (to p z q)
   to (laterˡ p) z (laterʳ q) = to (force p) z q
 
-  from : ∀ x {y} → (∀ z → x ⇓ z → y ⇓ z) → x ⊑ y
+  from : ∀ {i} x {y} → (∀ z → x ⇓ z → y ⇓ z) → [ i ] x ⊑ y
   from (now x)   p = p x now
   from (later x) p = laterˡ λ { .force →
                        from (force x) (λ z q → p z (laterʳ q)) }

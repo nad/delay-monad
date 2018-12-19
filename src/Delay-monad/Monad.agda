@@ -56,16 +56,16 @@ left-identity′ :
   return x >>=′ f ∼ f x
 left-identity′ x f = reflexive (f x)
 
-right-identity′ : ∀ {a} {A : Set a} (x : Delay A ∞) →
-                  x >>= return ∼ x
+right-identity′ : ∀ {a i} {A : Set a} (x : Delay A ∞) →
+                  [ i ] x >>= return ∼ x
 right-identity′ (now   x) = now
 right-identity′ (later x) = later λ { .force →
                               right-identity′ (force x) }
 
 associativity′ :
-  ∀ {a b c} {A : Set a} {B : Set b} {C : Set c} →
+  ∀ {a b c i} {A : Set a} {B : Set b} {C : Set c} →
   (x : Delay A ∞) (f : A → Delay B ∞) (g : B → Delay C ∞) →
-  x >>=′ (λ x → f x >>=′ g) ∼ x >>=′ f >>=′ g
+  [ i ] x >>=′ (λ x → f x >>=′ g) ∼ x >>=′ f >>=′ g
 associativity′ (now   x) f g = reflexive (f x >>=′ g)
 associativity′ (later x) f g = later λ { .force →
                                  associativity′ (force x) f g }
