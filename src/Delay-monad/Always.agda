@@ -7,6 +7,7 @@
 module Delay-monad.Always where
 
 open import Prelude
+open import Size
 
 open import Delay-monad
 open import Delay-monad.Monad

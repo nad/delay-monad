@@ -8,6 +8,7 @@ module Delay-monad where
 
 open import Equality.Propositional
 open import Prelude
+open import Size
 
 open import Bijection equality-with-J using (_↔_)
 open import Conat

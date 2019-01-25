@@ -9,6 +9,7 @@ module Delay-monad.Bisimilarity.Negative {a} {A : Set a} where
 open import Equality.Propositional
 open import Logical-equivalence using (_⇔_)
 open import Prelude
+open import Size
 
 open import Function-universe equality-with-J hiding (id; _∘_)
 

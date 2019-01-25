@@ -4,12 +4,13 @@
 
 {-# OPTIONS --without-K --safe --sized-types #-}
 
-open import Prelude
+open import Size
 
 module Delay-monad.Sized.Partial-order {a} {A : Size → Set a} where
 
 open import Equality.Propositional as E
 open import Logical-equivalence using (_⇔_)
+open import Prelude
 
 open import Bijection equality-with-J using (_↔_)
 open import Double-negation equality-with-J

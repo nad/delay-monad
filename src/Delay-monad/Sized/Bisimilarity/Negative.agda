@@ -4,13 +4,14 @@
 
 {-# OPTIONS --without-K --safe --sized-types #-}
 
-open import Prelude
+open import Size
 
 module Delay-monad.Sized.Bisimilarity.Negative
   {a} {A : Size → Set a} where
 
 open import Equality.Propositional
 open import Logical-equivalence using (_⇔_)
+open import Prelude
 
 open import Function-universe equality-with-J hiding (id; _∘_)
 
