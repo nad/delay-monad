@@ -3,7 +3,7 @@
 -- expansion, along with various properties
 ------------------------------------------------------------------------
 
-{-# OPTIONS --without-K --safe #-}
+{-# OPTIONS --without-K --safe --sized-types #-}
 
 module Delay-monad.Bisimilarity where
 

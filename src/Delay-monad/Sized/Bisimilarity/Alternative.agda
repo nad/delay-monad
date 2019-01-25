@@ -2,7 +2,7 @@
 -- Alternative definitions of weak bisimilarity
 ------------------------------------------------------------------------
 
-{-# OPTIONS --without-K --safe #-}
+{-# OPTIONS --without-K --safe --sized-types #-}
 
 open import Prelude
 

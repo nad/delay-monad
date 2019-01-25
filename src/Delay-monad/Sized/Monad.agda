@@ -2,7 +2,7 @@
 -- A monad-like structure
 ------------------------------------------------------------------------
 
-{-# OPTIONS --without-K --safe #-}
+{-# OPTIONS --without-K --safe --sized-types #-}
 
 module Delay-monad.Sized.Monad where
 

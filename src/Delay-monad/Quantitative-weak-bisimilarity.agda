@@ -3,7 +3,7 @@
 -- number of steps in two computations
 ------------------------------------------------------------------------
 
-{-# OPTIONS --without-K --safe #-}
+{-# OPTIONS --without-K --safe --sized-types #-}
 
 module Delay-monad.Quantitative-weak-bisimilarity {a} {A : Set a} where
 

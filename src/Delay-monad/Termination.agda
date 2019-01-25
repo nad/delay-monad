@@ -2,7 +2,7 @@
 -- Termination
 ------------------------------------------------------------------------
 
-{-# OPTIONS --without-K --safe #-}
+{-# OPTIONS --without-K --safe --sized-types #-}
 
 module Delay-monad.Termination {a} {A : Set a} where
 
