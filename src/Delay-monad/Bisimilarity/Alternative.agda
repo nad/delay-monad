@@ -73,8 +73,7 @@ _≈₃_ = [ ∞ ]_≈₃_
 ¬-≈₃-propositional : A → ¬ (∀ {x y} → Is-proposition (x ≈₃ y))
 ¬-≈₃-propositional x =
   (∀ {x y} → Is-proposition (x ≈₃ y))  ↝⟨ (λ prop → prop) ⟩
-  Is-proposition (y ≈₃ y)              ↝⟨ _⇔_.to propositional⇔irrelevant ⟩
-  Proof-irrelevant (y ≈₃ y)            ↝⟨ (_$ _) ∘ (_$ _) ⟩
+  Is-proposition (y ≈₃ y)              ↝⟨ (_$ _) ∘ (_$ _) ⟩
   proof₁ ≡ proof₂                      ↝⟨ (λ ()) ⟩□
   ⊥                                    □
   where

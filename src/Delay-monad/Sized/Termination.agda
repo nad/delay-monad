@@ -91,8 +91,7 @@ Terminates↔⇓ = record
 
 Terminates-propositional :
   Is-set (A ∞) → ∀ {i x y} → Is-proposition (Terminates i x y)
-Terminates-propositional A-set {i} =
-  _⇔_.from propositional⇔irrelevant (λ p q → irr p q refl)
+Terminates-propositional A-set {i} = λ p q → irr p q refl
   where
   irr :
     ∀ {x y y′}
@@ -102,7 +101,7 @@ Terminates-propositional A-set {i} =
     subst (([ i ]_≈ x) ∘ now) y≡y′ p ≡ q
   irr         (laterʳ p) (laterʳ q) refl = cong laterʳ (irr p q refl)
   irr {y = y} now        now        y≡y  =
-    subst (([ i ]_≈ now y) ∘ now) y≡y  now  ≡⟨ cong (λ eq → subst _ eq _) (_⇔_.to set⇔UIP A-set y≡y refl) ⟩
+    subst (([ i ]_≈ now y) ∘ now) y≡y  now  ≡⟨ cong (λ eq → subst _ eq _) (A-set y≡y refl) ⟩
     subst (([ i ]_≈ now y) ∘ now) refl now  ≡⟨⟩
     now                                     ∎
 
@@ -118,10 +117,7 @@ termination-value-unique (laterʳ p) (laterʳ q) =
 
 ∃-Terminates-propositional :
   Is-set (A ∞) → ∀ {i x} → Is-proposition (∃ (Terminates i x))
-∃-Terminates-propositional A-set =
-  _⇔_.from propositional⇔irrelevant λ where
-    (y₁ , x⇓y₁) (y₂ , x⇓y₂) →
-      Σ-≡,≡→≡
-        (termination-value-unique x⇓y₁ x⇓y₂)
-        (_⇔_.to propositional⇔irrelevant
-           (Terminates-propositional A-set) _ _)
+∃-Terminates-propositional A-set (y₁ , x⇓y₁) (y₂ , x⇓y₂) =
+  Σ-≡,≡→≡
+    (termination-value-unique x⇓y₁ x⇓y₂)
+    (Terminates-propositional A-set _ _)

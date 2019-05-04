@@ -13,7 +13,6 @@ open import Prelude
 open import Size
 
 open import Function-universe E.equality-with-J hiding (_∘_; Kind)
-open import H-level E.equality-with-J
 
 open import Delay-monad.Sized
 open import Delay-monad.Bisimilarity.Kind
@@ -424,12 +423,12 @@ module _ {a} {A : Size → Set a} where
   -- Expansion and weak bisimilarity are not pointwise propositional.
 
   ¬-≳≈-propositional :
-    ∀ {k} → ¬ (∀ {x y} → Is-proposition ([ ∞ ] x ⟨ other k ⟩ y))
+    ∀ {k} → ¬ (∀ {x y} → E.Is-proposition ([ ∞ ] x ⟨ other k ⟩ y))
   ¬-≳≈-propositional {k} =
-    (∀ {x y} → Is-proposition ([ ∞ ] x ⟨ other k ⟩ y))  ↝⟨ (λ prop → _⇔_.to propositional⇔irrelevant (prop {x = never} {y = never})) ⟩
-    E.Proof-irrelevant ([ ∞ ] never ⟨ other k ⟩ never)  ↝⟨ (λ irr → irr _ _) ⟩
-    proof₁ ≡ proof₂                                     ↝⟨ (λ ()) ⟩□
-    ⊥₀                                                  □
+    (∀ {x y} → E.Is-proposition ([ ∞ ] x ⟨ other k ⟩ y))  ↝⟨ (λ prop → prop {x = never} {y = never}) ⟩
+    E.Is-proposition ([ ∞ ] never ⟨ other k ⟩ never)      ↝⟨ (λ irr → irr _ _) ⟩
+    proof₁ ≡ proof₂                                       ↝⟨ (λ ()) ⟩□
+    ⊥₀                                                    □
     where
     proof₁ : ∀ {i} → [ i ] never ⟨ other k ⟩ never
     proof₁ = later λ { .force → proof₁ }
