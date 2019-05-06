@@ -4,7 +4,7 @@
 -- Nils Anders Danielsson
 ------------------------------------------------------------------------
 
-{-# OPTIONS --without-K --safe --sized-types #-}
+{-# OPTIONS --cubical --safe --sized-types #-}
 
 module README where
 
@@ -27,6 +27,12 @@ import Delay-monad.Bisimilarity.Kind
 -- expansion, along with various properties.
 
 import Delay-monad.Bisimilarity
+
+-- Strong bisimilarity for partially defined values, along with a
+-- proof showing that this relation is pointwise isomorphic to path
+-- equality.
+
+import Delay-monad.Bisimilarity.For-all-sizes
 
 -- A variant of weak bisimilarity that can be used to relate the
 -- number of steps in two computations.
@@ -78,6 +84,12 @@ import Delay-monad.Sized
 -- expansion, along with various properties.
 
 import Delay-monad.Sized.Bisimilarity
+
+-- Strong bisimilarity for partially defined values, along with a
+-- proof showing that this relation is pointwise isomorphic to path
+-- equality.
+
+import Delay-monad.Sized.Bisimilarity.For-all-sizes
 
 -- Termination.
 
