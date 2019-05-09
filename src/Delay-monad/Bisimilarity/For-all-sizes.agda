@@ -10,7 +10,7 @@ module Delay-monad.Bisimilarity.For-all-sizes where
 
 open import Equality.Path hiding (ext)
 open import Prelude
-open import Size
+open import Prelude.Size
 
 open import Bijection equality-with-J using (_↔_)
 

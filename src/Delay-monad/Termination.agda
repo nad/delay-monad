@@ -9,7 +9,7 @@ module Delay-monad.Termination {a} {A : Set a} where
 open import Equality.Propositional
 open import Logical-equivalence using (_⇔_)
 open import Prelude
-open import Size
+open import Prelude.Size
 
 open import Bijection equality-with-J using (_↔_)
 open import Double-negation equality-with-J

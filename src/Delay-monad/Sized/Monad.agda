@@ -7,7 +7,7 @@
 module Delay-monad.Sized.Monad where
 
 open import Prelude
-open import Size
+open import Prelude.Size
 
 open import Delay-monad.Sized
 open import Delay-monad.Sized.Bisimilarity

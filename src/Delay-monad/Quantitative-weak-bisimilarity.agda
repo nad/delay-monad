@@ -13,7 +13,7 @@ open import Conat
 open import Equality.Propositional
 open import Logical-equivalence using (_⇔_)
 open import Prelude hiding (_+_; _*_)
-open import Size
+open import Prelude.Size
 
 open import Function-universe equality-with-J as F hiding (id; _∘_)
 

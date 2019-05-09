@@ -8,7 +8,7 @@ module Delay-monad.Sized where
 
 open import Equality.Propositional
 open import Prelude
-open import Size
+open import Prelude.Size
 
 open import Bijection equality-with-J using (_↔_)
 

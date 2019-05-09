@@ -4,7 +4,7 @@
 
 {-# OPTIONS --without-K --safe --sized-types #-}
 
-open import Size
+open import Prelude.Size
 
 module Delay-monad.Sized.Bisimilarity.Alternative
   {a} {A : Size → Set a} where

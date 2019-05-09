@@ -11,7 +11,7 @@ open import Conat using (zero; suc; force; [_]_≤_)
 open import Equality.Propositional as E using (_≡_)
 open import Logical-equivalence using (_⇔_)
 open import Prelude
-open import Size
+open import Prelude.Size
 
 open import Function-universe E.equality-with-J hiding (_∘_; Kind)
 
