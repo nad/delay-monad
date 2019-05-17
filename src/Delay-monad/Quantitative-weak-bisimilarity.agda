@@ -7,14 +7,14 @@
 
 module Delay-monad.Quantitative-weak-bisimilarity {a} {A : Set a} where
 
-open import Conat
-  using (Conat; zero; suc; force; ⌜_⌝; _+_; _*_;
-         [_]_≤_; step-≤; step-∼≤; _∎≤; step-∼; _∎∼)
 open import Equality.Propositional
 open import Logical-equivalence using (_⇔_)
 open import Prelude hiding (_+_; _*_)
 open import Prelude.Size
 
+open import Conat equality-with-J as Conat
+  using (Conat; zero; suc; force; ⌜_⌝; _+_; _*_;
+         [_]_≤_; step-≤; step-∼≤; _∎≤; step-∼; _∎∼)
 open import Function-universe equality-with-J as F hiding (id; _∘_)
 
 open import Delay-monad

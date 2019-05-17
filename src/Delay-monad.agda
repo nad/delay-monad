@@ -11,7 +11,7 @@ open import Prelude
 open import Prelude.Size
 
 open import Bijection equality-with-J using (_↔_)
-open import Conat
+open import Conat equality-with-J
 
 -- The delay monad.
 

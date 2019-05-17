@@ -6,11 +6,11 @@
 
 module Delay-monad.Monad where
 
-open import Conat using (zero; suc; force)
 open import Equality.Propositional
 open import Prelude
 open import Prelude.Size
 
+open import Conat equality-with-J as Conat using (zero; suc; force)
 open import Monad equality-with-J
 
 open import Delay-monad
