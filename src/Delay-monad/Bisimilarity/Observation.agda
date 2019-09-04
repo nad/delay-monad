@@ -110,7 +110,7 @@ transitive-≈ x≈y y≈z = y≈z F.∘ x≈y
 laterˡ⁻¹ : later x′ ≈ y → x′ .force ≈ y
 laterˡ⁻¹ p ._⇔_.to   q = _⇔_.to p (later q)
 laterˡ⁻¹ p ._⇔_.from q with _⇔_.from p q
-laterˡ⁻¹ p ._⇔_.from q | later q′ = q′
+…                      | later q′ = q′
 
 laterʳ⁻¹ : x ≈ later y′ → x ≈ y′ .force
 laterʳ⁻¹ = symmetric-≈ ∘ laterˡ⁻¹ ∘ symmetric-≈
@@ -123,9 +123,9 @@ later⁻¹ = laterˡ⁻¹ ∘ laterʳ⁻¹
 
 put⁻¹ : put b x ≈ put b′ y → x ≈ y
 put⁻¹ p ._⇔_.to   q with _⇔_.to p (put-suc q)
-put⁻¹ p ._⇔_.to   q | put-suc q′ = q′
+…                   | put-suc q′ = q′
 put⁻¹ p ._⇔_.from q with _⇔_.from p (put-suc q)
-put⁻¹ p ._⇔_.from q | put-suc q′ = q′
+…                   | put-suc q′ = q′
 
 ------------------------------------------------------------------------
 -- Not weak bisimilarity
@@ -219,7 +219,7 @@ module Not-weak-bisimilarity where
   ¬≈→[]≈ : ¬ (∀ {x y} → x ≈ y → [ ∞ ] x ≈ y)
   ¬≈→[]≈ =
     (∀ {x y} → x ≈ y → [ ∞ ] x ≈ y)  ↝⟨ (λ hyp → record { to = hyp; from = []≈→≈ }) ⟩
-    (∀ {x y} → x ≈ y ⇔ [ ∞ ] x ≈ y)  ↝⟨ ¬≈⇔[]≈ ⟩
+    (∀ {x y} → x ≈ y ⇔ [ ∞ ] x ≈ y)  ↝⟨ ¬≈⇔[]≈ ⟩□
     ⊥                                □
 
 ------------------------------------------------------------------------
