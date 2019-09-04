@@ -47,6 +47,10 @@ import Delay-monad.Termination
 
 import Delay-monad.Bisimilarity.Alternative
 
+-- An observation about weak bisimilarity.
+
+import Delay-monad.Bisimilarity.Observation
+
 -- Some negative results related to weak bisimilarity and expansion.
 
 import Delay-monad.Bisimilarity.Negative
