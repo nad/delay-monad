@@ -167,26 +167,49 @@ module _ {a} {A : Size → Set a} where
 
   -- Later constructors can sometimes be removed.
 
+  drop-laterʳ :
+    ∀ {k i} {j : Size< i} {x y} →
+    [ i ] x ⟨ other k ⟩ y →
+    [ j ] x ⟨ other k ⟩ drop-later y
+  drop-laterʳ now        = now
+  drop-laterʳ (later  p) = laterˡ (force p)
+  drop-laterʳ (laterʳ p) = p
+  drop-laterʳ (laterˡ p) = laterˡ (drop-laterʳ p)
+
+  drop-laterˡ :
+    ∀ {i} {j : Size< i} {x y} →
+    [ i ] x ≈ y →
+    [ j ] drop-later x ≈ y
+  drop-laterˡ now        = now
+  drop-laterˡ (later  p) = laterʳ (force p)
+  drop-laterˡ (laterʳ p) = laterʳ (drop-laterˡ p)
+  drop-laterˡ (laterˡ p) = p
+
+  drop-laterˡʳ :
+    ∀ {k i} {j : Size< i} {x y} →
+    [ i ] x ⟨ other k ⟩ y →
+    [ j ] drop-later x ⟨ other k ⟩ drop-later y
+  drop-laterˡʳ now        = now
+  drop-laterˡʳ (later  p) = force p
+  drop-laterˡʳ (laterʳ p) = drop-laterˡ p
+  drop-laterˡʳ (laterˡ p) = drop-laterʳ p
+
+  -- Special cases of the functions above.
+
   laterʳ⁻¹ : ∀ {k i} {j : Size< i} {x y} →
              [ i ] x ⟨ other k ⟩ later y →
              [ j ] x ⟨ other k ⟩ force y
-  laterʳ⁻¹ (later  p) = laterˡ (force p)
-  laterʳ⁻¹ (laterʳ p) = p
-  laterʳ⁻¹ (laterˡ p) = laterˡ (laterʳ⁻¹ p)
+  laterʳ⁻¹ = drop-laterʳ
 
   laterˡ⁻¹ : ∀ {i} {j : Size< i} {x y} →
              [ i ] later x ≈ y →
              [ j ] force x ≈ y
-  laterˡ⁻¹ (later  p) = laterʳ (force p)
-  laterˡ⁻¹ (laterʳ p) = laterʳ (laterˡ⁻¹ p)
-  laterˡ⁻¹ (laterˡ p) = p
+  laterˡ⁻¹ = drop-laterˡ
 
   later⁻¹ : ∀ {k i} {j : Size< i} {x y} →
             [ i ] later x ⟨ other k ⟩ later y →
             [ j ] force x ⟨ other k ⟩ force y
-  later⁻¹ (later  p) = force p
-  later⁻¹ (laterʳ p) = laterˡ⁻¹ p
-  later⁻¹ (laterˡ p) = laterʳ⁻¹ p
+  later⁻¹ = drop-laterˡʳ
 
   -- The following size-preserving variant of laterʳ⁻¹ and laterˡ⁻¹
   -- can be defined.
