@@ -327,12 +327,24 @@ module _ {a} {A : Set a} where
 
   -- Equational reasoning combinators.
 
-  infix  -1 _∎ finally-≈
-  infixr -2 step-∼ˡ step-∼∼ step-≳∼ step-≈∼ step-≳ˡ step-≈
+  infix  -1 _∎ finally finally-≳ finally-≈
+  infixr -2 step-∼ˡ step-∼∼ step-≳∼ step-≈∼ step-?∼ step-≳ˡ step-≈
             _≳⟨⟩_ step-≡ˡ _∼⟨⟩_
 
   _∎ : ∀ {k i} x → [ i ] x ⟨ k ⟩ x
   _∎ = reflexive
+
+  finally : ∀ {k i} x y →
+            [ i ] x ⟨ k ⟩ y → [ i ] x ⟨ k ⟩ y
+  finally _ _ x?y = x?y
+
+  syntax finally x y x≈y = x ?⟨ x≈y ⟩∎ y ∎
+
+  finally-≳ : ∀ {i} x y →
+              [ i ] x ≳ y → [ i ] x ≳ y
+  finally-≳ _ _ x≳y = x≳y
+
+  syntax finally-≳ x y x≳y = x ≳⟨ x≳y ⟩∎ y ∎
 
   finally-≈ : ∀ {i} x y →
               [ i ] x ≈ y → [ i ] x ≈ y
@@ -363,6 +375,12 @@ module _ {a} {A : Set a} where
   step-≈∼ _ y∼z x≈y = transitive-∞∼ʳ x≈y y∼z
 
   syntax step-≈∼ x y∼z x≈y = x ≈⟨ x≈y ⟩∼ y∼z
+
+  step-?∼ : ∀ {k i} x {y z} →
+            y ∼ z → [ i ] x ⟨ k ⟩ y → [ i ] x ⟨ k ⟩ z
+  step-?∼ _ y∼z x?y = transitive-∞∼ʳ x?y y∼z
+
+  syntax step-?∼ x y∼z x?y = x ?⟨ x?y ⟩∼ y∼z
 
   step-≳ˡ : ∀ {k i} x {y z} →
             [ i ] y ⟨ other k ⟩ z → x ≳ y →
