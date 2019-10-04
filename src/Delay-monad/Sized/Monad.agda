@@ -97,3 +97,15 @@ now      >>=-cong q = q _
 later  p >>=-cong q = later λ { .force → force p >>=-cong q }
 laterˡ p >>=-cong q = laterˡ (p >>=-cong q)
 laterʳ p >>=-cong q = laterʳ (p >>=-cong q)
+
+------------------------------------------------------------------------
+-- A lemma
+
+-- The function map can be expressed using _>>=′_ and now.
+
+map∼>>=-now :
+  ∀ {i a b} {A : Size → Set a} {B : Size → Set b}
+    {f : ∀ {i} → A i → B i} (x : Delay A ∞) →
+  [ i ] map f x ∼ x >>= now ∘ f
+map∼>>=-now (now x)   = now
+map∼>>=-now (later x) = later λ { .force → map∼>>=-now (x .force) }
