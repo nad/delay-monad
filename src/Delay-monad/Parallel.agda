@@ -25,18 +25,169 @@ private
     A B             : Set a
     i               : Size
     k               : Kind
+    f f₁ f₂ g       : Delay (A → B) ∞
     x x₁ x₂ y y₁ y₂ : Delay A ∞
-    x′ y′           : Delay′ A ∞
+    f′              : Delay′ (A → B) ∞
+    x′              : Delay′ A ∞
+    h               : A → B
+    z               : A
+
+------------------------------------------------------------------------
+-- The _⊛_ operator
+
+-- Parallel composition of computations.
+
+infixl 6 _⊛_
+
+_⊛_ : Delay (A → B) i → Delay A i → Delay B i
+now f   ⊛ now x   = now (f x)
+now f   ⊛ later x = later λ { .force → now f ⊛ x .force }
+later f ⊛ now x   = later λ { .force → f .force ⊛ now x }
+later f ⊛ later x = later λ { .force → f .force ⊛ x .force }
+
+-- The number of later constructors in f ⊛ x is bisimilar to the
+-- maximum of the number of later constructors in f and the number of
+-- later constructors in x.
+
+steps-⊛∼max-steps-steps :
+  Conat.[ i ] steps (f ⊛ x) ∼ max (steps f) (steps x)
+steps-⊛∼max-steps-steps {f = now _}   {x = now _}   = zero
+steps-⊛∼max-steps-steps {f = now _}   {x = later _} = suc λ { .force → steps-⊛∼max-steps-steps }
+steps-⊛∼max-steps-steps {f = later _} {x = now _}   = suc λ { .force → steps-⊛∼max-steps-steps }
+steps-⊛∼max-steps-steps {f = later _} {x = later _} = suc λ { .force → steps-⊛∼max-steps-steps }
+
+-- Rearrangement lemmas for _⊛_.
+
+later-⊛ :
+  later f′ ⊛ x ∼ later (record { force = f′ .force ⊛ drop-later x })
+later-⊛ {x = now _}   = later λ { .force → _ ∎ }
+later-⊛ {x = later _} = later λ { .force → _ ∎ }
+
+⊛-later :
+  f ⊛ later x′ ∼ later (record { force = drop-later f ⊛ x′ .force })
+⊛-later {f = now _}   = later λ { .force → _ ∎ }
+⊛-later {f = later _} = later λ { .force → _ ∎ }
+
+-- The _⊛_ operator preserves strong and weak bisimilarity and
+-- expansion.
+
+infixl 6 _⊛-cong_
+
+_⊛-cong_ :
+  [ i ] f₁ ⟨ k ⟩ f₂ →
+  [ i ] x₁ ⟨ k ⟩ x₂ →
+  [ i ] f₁ ⊛ x₁ ⟨ k ⟩ f₂ ⊛ x₂
+now      ⊛-cong now      = now
+now      ⊛-cong later  q = later λ { .force → now ⊛-cong q .force }
+now      ⊛-cong laterˡ q = laterˡ (now ⊛-cong q)
+now      ⊛-cong laterʳ q = laterʳ (now ⊛-cong q)
+later  p ⊛-cong now      = later λ { .force → p .force ⊛-cong now }
+laterˡ p ⊛-cong now      = laterˡ (p ⊛-cong now)
+laterʳ p ⊛-cong now      = laterʳ (p ⊛-cong now)
+
+later  p ⊛-cong later  q = later λ { .force → p .force ⊛-cong q .force }
+laterʳ p ⊛-cong laterʳ q = laterʳ (p ⊛-cong q)
+laterˡ p ⊛-cong laterˡ q = laterˡ (p ⊛-cong q)
+
+later {x = f₁} {y = f₂} p ⊛-cong laterˡ {x = x₁} {y = x₂} q =
+  later f₁ ⊛ later x₁                                   ∼⟨ (later λ { .force → _ ∎ }) ⟩
+  later (record { force = f₁ .force ⊛ x₁ .force })      ?⟨ (later λ { .force → p .force ⊛-cong drop-laterʳ q }) ⟩∼
+  later (record { force = f₂ .force ⊛ drop-later x₂ })  ∼⟨ symmetric later-⊛ ⟩
+  later f₂ ⊛ x₂                                         ∎
+
+later {x = f₁} {y = f₂} p ⊛-cong laterʳ {x = x₁} {y = x₂} q =
+  later f₁ ⊛ x₁                                         ∼⟨ later-⊛ ⟩
+  later (record { force = f₁ .force ⊛ drop-later x₁ })  ≈⟨ (later λ { .force → p .force ⊛-cong drop-laterˡ q }) ⟩∼
+  later (record { force = f₂ .force ⊛ x₂ .force })      ∼⟨ (later λ { .force → _ ∎ }) ⟩
+  later f₂ ⊛ later x₂                                   ∎
+
+laterˡ {x = f₁} {y = f₂} p ⊛-cong later {x = x₁} {y = x₂} q =
+  later f₁ ⊛ later x₁                                   ∼⟨ (later λ { .force → _ ∎ }) ⟩
+  later (record { force = f₁ .force ⊛ x₁ .force })      ?⟨ (later λ { .force → drop-laterʳ p ⊛-cong q .force }) ⟩∼
+  later (record { force = drop-later f₂ ⊛ x₂ .force })  ∼⟨ symmetric ⊛-later ⟩
+  f₂ ⊛ later x₂                                         ∎
+
+laterʳ {x = f₁} {y = f₂} p ⊛-cong later {x = x₁} {y = x₂} q =
+  f₁ ⊛ later x₁                                         ∼⟨ ⊛-later ⟩
+  later (record { force = drop-later f₁ ⊛ x₁ .force })  ≈⟨ (later λ { .force → drop-laterˡ p ⊛-cong q .force }) ⟩∼
+  later (record { force = f₂ .force ⊛ x₂ .force })      ∼⟨ (later λ { .force → _ ∎ }) ⟩
+  later f₂ ⊛ later x₂                                   ∎
+
+laterˡ {x = f₁} {y = f₂} p ⊛-cong laterʳ {x = x₁} {y = x₂} q =
+  later f₁ ⊛ x₁                                         ∼⟨ later-⊛ ⟩
+  later (record { force = f₁ .force ⊛ drop-later x₁ })  ≈⟨ (later λ { .force → drop-laterʳ p ⊛-cong drop-laterˡ q }) ⟩∼
+  later (record { force = drop-later f₂ ⊛ x₂ .force })  ∼⟨ symmetric ⊛-later ⟩
+  f₂ ⊛ later x₂                                         ∎
+
+laterʳ {x = f₁} {y = f₂} p ⊛-cong laterˡ {x = x₁} {y = x₂} q =
+  f₁ ⊛ later x₁                                         ∼⟨ ⊛-later ⟩
+  later (record { force = drop-later f₁ ⊛ x₁ .force })  ≈⟨ (later λ { .force → drop-laterˡ p ⊛-cong drop-laterʳ q }) ⟩∼
+  later (record { force = f₂ .force ⊛ drop-later x₂ })  ∼⟨ symmetric later-⊛ ⟩
+  later f₂ ⊛ x₂                                         ∎
+
+-- The _⊛_ operator is (kind of) commutative.
+
+⊛-comm : [ i ] f ⊛ x ∼ map′ (flip _$_) x ⊛ f
+⊛-comm {f = now f}   {x = now x}   = reflexive _
+⊛-comm {f = now f}   {x = later x} = later λ { .force → ⊛-comm }
+⊛-comm {f = later f} {x = now x}   = later λ { .force → ⊛-comm }
+⊛-comm {f = later f} {x = later x} = later λ { .force → ⊛-comm }
+
+-- The function map′ can be expressed using _⊛_.
+
+map∼now-⊛ : [ i ] map′ h x ∼ now h ⊛ x
+map∼now-⊛ {x = now x}   = now
+map∼now-⊛ {x = later x} = later λ { .force → map∼now-⊛ }
+
+-- The applicative functor laws hold up to strong bisimilarity.
+
+now-id-⊛ : [ i ] now id ⊛ x ∼ x
+now-id-⊛ {x = now x}   = now
+now-id-⊛ {x = later x} = later λ { .force → now-id-⊛ }
+
+now-∘-⊛-⊛-⊛ :
+  [ i ] now (λ f → f ∘_) ⊛ f ⊛ g ⊛ x ∼ f ⊛ (g ⊛ x)
+now-∘-⊛-⊛-⊛ {f = now _}   {g = now _}   {x = now _}   = now
+now-∘-⊛-⊛-⊛ {f = now _}   {g = now _}   {x = later _} = later λ { .force → now-∘-⊛-⊛-⊛ }
+now-∘-⊛-⊛-⊛ {f = now _}   {g = later _} {x = now _}   = later λ { .force → now-∘-⊛-⊛-⊛ }
+now-∘-⊛-⊛-⊛ {f = now _}   {g = later _} {x = later _} = later λ { .force → now-∘-⊛-⊛-⊛ }
+now-∘-⊛-⊛-⊛ {f = later _} {g = now _}   {x = now _}   = later λ { .force → now-∘-⊛-⊛-⊛ }
+now-∘-⊛-⊛-⊛ {f = later _} {g = now _}   {x = later _} = later λ { .force → now-∘-⊛-⊛-⊛ }
+now-∘-⊛-⊛-⊛ {f = later _} {g = later _} {x = now _}   = later λ { .force → now-∘-⊛-⊛-⊛ }
+now-∘-⊛-⊛-⊛ {f = later _} {g = later _} {x = later _} = later λ { .force → now-∘-⊛-⊛-⊛ }
+
+now-⊛-now : [ i ] now h ⊛ now z ∼ now (h z)
+now-⊛-now = now
+
+⊛-now : [ i ] f ⊛ now z ∼ now (λ f → f z) ⊛ f
+⊛-now {f = now f}   = now
+⊛-now {f = later f} = later λ { .force → ⊛-now }
+
+-- The _⊛_ operator can be expressed using other functions (up to
+-- expansion).
+
+⊛-≲ : [ i ] f ⊛ x ≲ (f >>=′ λ f → x >>=′ λ x → now (f x))
+⊛-≲ {f = now f} {x = now x}   = now (f x)  ∎
+⊛-≲ {f = now f} {x = later x} = later λ { .force →
+  (now f >>=′ λ f → x .force >>=′ λ x → now (f x))  ≳⟨ ⊛-≲ ⟩∎
+  now f ⊛ x .force                                  ∎ }
+⊛-≲ {f = later f} {x = now x} = later λ { .force →
+  (f .force >>=′ λ f → now x >>=′ λ x → now (f x))  ≳⟨ ⊛-≲ ⟩∎
+  f .force ⊛ now x                                  ∎ }
+⊛-≲ {f = later f} {x = later x} = later λ { .force →
+  (f .force >>=′ λ f → later x >>=′ λ x → now (f x))   ≳⟨ ((f .force ∎) >>=-cong λ _ → laterˡ (_ ∎)) ⟩
+  (f .force >>=′ λ f → x .force >>=′ λ x → now (f x))  ≳⟨ ⊛-≲ ⟩∎
+  f .force ⊛ x .force                                  ∎ }
+
+------------------------------------------------------------------------
+-- The _∣_ operator
 
 -- Parallel composition of computations.
 
 infix 10 _∣_
 
 _∣_ : Delay A i → Delay B i → Delay (A × B) i
-now x   ∣ now y   = now (x , y)
-now x   ∣ later y = later λ { .force → now x ∣ y .force }
-later x ∣ now y   = later λ { .force → x .force ∣ now y }
-later x ∣ later y = later λ { .force → x .force ∣ y .force }
+x ∣ y = map′ _,_ x ⊛ y
 
 -- The number of later constructors in x ∣ y is bisimilar to the
 -- maximum of the number of later constructors in x and the number of
@@ -44,49 +195,11 @@ later x ∣ later y = later λ { .force → x .force ∣ y .force }
 
 steps-∣∼max-steps-steps :
   Conat.[ i ] steps (x ∣ y) ∼ max (steps x) (steps y)
-steps-∣∼max-steps-steps {x = now _}   {y = now _}   = zero
-steps-∣∼max-steps-steps {x = later _} {y = now _}   = suc λ { .force → steps-∣∼max-steps-steps }
-steps-∣∼max-steps-steps {x = now _}   {y = later _} = suc λ { .force → steps-∣∼max-steps-steps }
-steps-∣∼max-steps-steps {x = later _} {y = later _} = suc λ { .force → steps-∣∼max-steps-steps }
-
--- The _∣_ operator can be expressed using other functions (up to
--- expansion).
-
-∣-≲ : [ i ] x ∣ y ≲ (x >>=′ λ x → y >>=′ λ y → now (x , y))
-∣-≲ {x = now x} {y = now y}   = now (x , y)  ∎
-∣-≲ {x = now x} {y = later y} = later λ { .force →
-  (now x >>=′ λ x → y .force >>=′ λ y → now (x , y))  ≳⟨ ∣-≲ ⟩∎
-  now x ∣ y .force                                    ∎ }
-∣-≲ {x = later x} {y = now y}   = later λ { .force →
-  (x .force >>=′ λ x → now y >>=′ λ y → now (x , y))  ≳⟨ ∣-≲ ⟩∎
-  x .force ∣ now y                                    ∎ }
-∣-≲ {x = later x} {y = later y} = later λ { .force →
-  (x .force >>=′ λ x → later y >>=′ λ y → now (x , y))   ≳⟨ ((x .force ∎) >>=-cong λ _ → laterˡ (_ ∎)) ⟩
-  (x .force >>=′ λ x → y .force >>=′ λ y → now (x , y))  ≳⟨ ∣-≲ ⟩∎
-  x .force ∣ y .force                                    ∎ }
-
--- The _∣_ operator is commutative (up to swapping of results).
-
-∣-comm : [ i ] x ∣ y ∼ map′ swap (y ∣ x)
-∣-comm {x = now x}   {y = now y}   = reflexive _
-∣-comm {x = now x}   {y = later y} = later λ { .force → ∣-comm }
-∣-comm {x = later x} {y = now y}   = later λ { .force → ∣-comm }
-∣-comm {x = later x} {y = later y} = later λ { .force → ∣-comm }
-
--- Rearrangement lemmas for _∣_.
-
-∣-later :
-  x ∣ later y′ ∼ later (record { force = drop-later x ∣ y′ .force })
-∣-later {x = now x}   = later λ { .force → _ ∎ }
-∣-later {x = later x} = later λ { .force → _ ∎ }
-
-later-∣ :
-  later x′ ∣ y ∼ later (record { force = x′ .force ∣ drop-later y })
-later-∣ {x′ = x′} {y = y} =
-  later x′ ∣ y                                                     ∼⟨ ∣-comm ⟩
-  map′ swap (y ∣ later x′)                                         ∼⟨ map-cong _ ∣-later ⟩
-  map′ swap (later (record { force = drop-later y ∣ x′ .force }))  ∼⟨ (later λ { .force → symmetric ∣-comm }) ⟩
-  later (record { force = x′ .force ∣ drop-later y })              ∎
+steps-∣∼max-steps-steps {x = x} {y = y} =
+  steps (x ∣ y)                       Conat.∼⟨ Conat.reflexive-∼ _ ⟩
+  steps (map′ _,_ x ⊛ y)              Conat.∼⟨ steps-⊛∼max-steps-steps ⟩
+  max (steps (map′ _,_ x)) (steps y)  Conat.∼⟨ Conat.max-cong (steps-map′ x) (Conat.reflexive-∼ _) ⟩∎
+  max (steps x) (steps y)             ∎∼
 
 -- The _∣_ operator preserves strong and weak bisimilarity and
 -- expansion.
@@ -97,50 +210,38 @@ _∣-cong_ :
   [ i ] x₁ ⟨ k ⟩ x₂ →
   [ i ] y₁ ⟨ k ⟩ y₂ →
   [ i ] x₁ ∣ y₁ ⟨ k ⟩ x₂ ∣ y₂
-now      ∣-cong now      = now
-now      ∣-cong later  q = later λ { .force → now ∣-cong q .force }
-now      ∣-cong laterˡ q = laterˡ (now ∣-cong q)
-now      ∣-cong laterʳ q = laterʳ (now ∣-cong q)
-later  p ∣-cong now      = later λ { .force → p .force ∣-cong now }
-laterˡ p ∣-cong now      = laterˡ (p ∣-cong now)
-laterʳ p ∣-cong now      = laterʳ (p ∣-cong now)
+p ∣-cong q = map-cong _,_ p ⊛-cong q
 
-later  p ∣-cong later  q = later λ { .force → p .force ∣-cong q .force }
-laterʳ p ∣-cong laterʳ q = laterʳ (p ∣-cong q)
-laterˡ p ∣-cong laterˡ q = laterˡ (p ∣-cong q)
+-- The _∣_ operator is commutative (up to swapping of results).
 
-later {x = x₁} {y = x₂} p ∣-cong laterˡ {x = y₁} {y = y₂} q =
-  later x₁ ∣ later y₁                                   ∼⟨ (later λ { .force → _ ∎ }) ⟩
-  later (record { force = x₁ .force ∣ y₁ .force })      ?⟨ (later λ { .force → p .force ∣-cong drop-laterʳ q }) ⟩∼
-  later (record { force = x₂ .force ∣ drop-later y₂ })  ∼⟨ symmetric later-∣ ⟩
-  later x₂ ∣ y₂                                         ∎
+∣-comm : [ i ] x ∣ y ∼ map′ swap (y ∣ x)
+∣-comm {x = x} {y = y} =
+  x ∣ y                                                          ∼⟨⟩
+  map′ _,_ x ⊛ y                                                 ∼⟨ ⊛-comm ⟩
+  map′ (flip _$_) y ⊛ map′ _,_ x                                 ∼⟨ map∼now-⊛ ⊛-cong map∼now-⊛ ⟩
+  now (flip _$_) ⊛ y ⊛ (now _,_ ⊛ x)                             ∼⟨ symmetric now-∘-⊛-⊛-⊛ ⟩
+  now (λ f → f ∘_) ⊛ (now (flip _$_) ⊛ y) ⊛ now _,_ ⊛ x          ∼⟨ symmetric now-∘-⊛-⊛-⊛ ⊛-cong (_ ∎) ⊛-cong (_ ∎) ⟩
+  now _∘_ ⊛ now (λ f → f ∘_) ⊛ now (flip _$_) ⊛ y ⊛ now _,_ ⊛ x  ∼⟨⟩
+  now (λ x f y → f y x) ⊛ y ⊛ now _,_ ⊛ x                        ∼⟨ ⊛-now ⊛-cong (_ ∎) ⟩
+  now (_$ _,_) ⊛ (now (λ x f y → f y x) ⊛ y) ⊛ x                 ∼⟨ symmetric now-∘-⊛-⊛-⊛ ⊛-cong (_ ∎) ⟩
+  now _∘_ ⊛ now (_$ _,_) ⊛ now (λ x f y → f y x) ⊛ y ⊛ x         ∼⟨⟩
+  now (curry swap) ⊛ y ⊛ x                                       ∼⟨⟩
+  now _∘_ ⊛ now (swap ∘_) ⊛ now _,_ ⊛ y ⊛ x                      ∼⟨ now-∘-⊛-⊛-⊛ ⊛-cong (_ ∎) ⟩
+  now (swap ∘_) ⊛ (now _,_ ⊛ y) ⊛ x                              ∼⟨ (_ ∎) ⊛-cong symmetric map∼now-⊛ ⊛-cong (_ ∎) ⟩
+  now (swap ∘_) ⊛ map′ _,_ y ⊛ x                                 ∼⟨⟩
+  now _∘_ ⊛ now swap ⊛ map′ _,_ y ⊛ x                            ∼⟨ now-∘-⊛-⊛-⊛ ⟩
+  now swap ⊛ (map′ _,_ y ⊛ x)                                    ∼⟨ symmetric map∼now-⊛ ⟩
+  map′ swap (map′ _,_ y ⊛ x)                                     ∼⟨⟩
+  map′ swap (y ∣ x)                                              ∎
 
-later {x = x₁} {y = x₂} p ∣-cong laterʳ {x = y₁} {y = y₂} q =
-  later x₁ ∣ y₁                                         ∼⟨ later-∣ ⟩
-  later (record { force = x₁ .force ∣ drop-later y₁ })  ≈⟨ (later λ { .force → p .force ∣-cong drop-laterˡ q }) ⟩∼
-  later (record { force = x₂ .force ∣ y₂ .force })      ∼⟨ (later λ { .force → _ ∎ }) ⟩
-  later x₂ ∣ later y₂                                   ∎
+-- The _∣_ operator can be expressed using other functions (up to
+-- expansion).
 
-laterˡ {x = x₁} {y = x₂} p ∣-cong later {x = y₁} {y = y₂} q =
-  later x₁ ∣ later y₁                                   ∼⟨ (later λ { .force → _ ∎ }) ⟩
-  later (record { force = x₁ .force ∣ y₁ .force })      ?⟨ (later λ { .force → drop-laterʳ p ∣-cong q .force }) ⟩∼
-  later (record { force = drop-later x₂ ∣ y₂ .force })  ∼⟨ symmetric ∣-later ⟩
-  x₂ ∣ later y₂                                         ∎
-
-laterʳ {x = x₁} {y = x₂} p ∣-cong later {x = y₁} {y = y₂} q =
-  x₁ ∣ later y₁                                         ∼⟨ ∣-later ⟩
-  later (record { force = drop-later x₁ ∣ y₁ .force })  ≈⟨ (later λ { .force → drop-laterˡ p ∣-cong q .force }) ⟩∼
-  later (record { force = x₂ .force ∣ y₂ .force })      ∼⟨ (later λ { .force → _ ∎ }) ⟩
-  later x₂ ∣ later y₂                                   ∎
-
-laterˡ {x = x₁} {y = x₂} p ∣-cong laterʳ {x = y₁} {y = y₂} q =
-  later x₁ ∣ y₁                                         ∼⟨ later-∣ ⟩
-  later (record { force = x₁ .force ∣ drop-later y₁ })  ≈⟨ (later λ { .force → drop-laterʳ p ∣-cong drop-laterˡ q }) ⟩∼
-  later (record { force = drop-later x₂ ∣ y₂ .force })  ∼⟨ symmetric ∣-later ⟩
-  x₂ ∣ later y₂                                         ∎
-
-laterʳ {x = x₁} {y = x₂} p ∣-cong laterˡ {x = y₁} {y = y₂} q =
-  x₁ ∣ later y₁                                         ∼⟨ ∣-later ⟩
-  later (record { force = drop-later x₁ ∣ y₁ .force })  ≈⟨ (later λ { .force → drop-laterˡ p ∣-cong drop-laterʳ q }) ⟩∼
-  later (record { force = x₂ .force ∣ drop-later y₂ })  ∼⟨ symmetric later-∣ ⟩
-  later x₂ ∣ y₂                                         ∎
+∣-≲ : [ i ] x ∣ y ≲ (x >>=′ λ x → y >>=′ λ y → now (x , y))
+∣-≲ {x = x} {y = y} =
+  (x >>=′ λ x → y >>=′ λ y → now (x , y))                        ∼⟨⟩
+  (x >>=′ λ x → now (x ,_) >>=′ λ f → y >>=′ λ y → now (f y))    ∼⟨ associativity′ x _ _ ⟩
+  ((x >>=′ λ x → now (x ,_)) >>=′ λ f → y >>=′ λ y → now (f y))  ∼⟨ (symmetric (map∼>>=-now x) >>=-cong λ _ → _ ∎) ⟩
+  (map′ _,_ x >>=′ λ f → y >>=′ λ y → now (f y))                 ≳⟨ ⊛-≲ ⟩
+  map′ _,_ x ⊛ y                                                 ∼⟨⟩
+  x ∣ y                                                          ∎
