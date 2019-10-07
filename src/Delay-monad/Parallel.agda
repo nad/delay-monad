@@ -17,6 +17,7 @@ open import Delay-monad
 open import Delay-monad.Bisimilarity
 open import Delay-monad.Bisimilarity.Kind
 open import Delay-monad.Monad
+import Delay-monad.Sequential as S
 
 private
 
@@ -163,21 +164,20 @@ now-⊛-now = now
 ⊛-now {f = now f}   = now
 ⊛-now {f = later f} = later λ { .force → ⊛-now }
 
--- The _⊛_ operator can be expressed using other functions (up to
--- expansion).
+-- Sequential composition is an expansion of parallel composition.
 
-⊛-≲ : [ i ] f ⊛ x ≲ (f >>=′ λ f → x >>=′ λ x → now (f x))
-⊛-≲ {f = now f} {x = now x}   = now (f x)  ∎
-⊛-≲ {f = now f} {x = later x} = later λ { .force →
-  (now f >>=′ λ f → x .force >>=′ λ x → now (f x))  ≳⟨ ⊛-≲ ⟩∎
-  now f ⊛ x .force                                  ∎ }
-⊛-≲ {f = later f} {x = now x} = later λ { .force →
-  (f .force >>=′ λ f → now x >>=′ λ x → now (f x))  ≳⟨ ⊛-≲ ⟩∎
-  f .force ⊛ now x                                  ∎ }
-⊛-≲ {f = later f} {x = later x} = later λ { .force →
-  (f .force >>=′ λ f → later x >>=′ λ x → now (f x))   ≳⟨ ((f .force ∎) >>=-cong λ _ → laterˡ (_ ∎)) ⟩
-  (f .force >>=′ λ f → x .force >>=′ λ x → now (f x))  ≳⟨ ⊛-≲ ⟩∎
-  f .force ⊛ x .force                                  ∎ }
+⊛≳⊛ : [ i ] f S.⊛ x ≳ f ⊛ x
+⊛≳⊛ {f = now f} {x = now x}   = now (f x)  ∎
+⊛≳⊛ {f = now f} {x = later x} = later λ { .force →
+  now f S.⊛ x .force  ≳⟨ ⊛≳⊛ ⟩∎
+  now f ⊛ x .force    ∎ }
+⊛≳⊛ {f = later f} {x = now x} = later λ { .force →
+  f .force S.⊛ now x  ≳⟨ ⊛≳⊛ ⟩∎
+  f .force ⊛ now x    ∎ }
+⊛≳⊛ {f = later f} {x = later x} = later λ { .force →
+  f .force S.⊛ later x   ≳⟨ ((f .force ∎) >>=-cong λ _ → laterˡ (_ ∎)) ⟩
+  f .force S.⊛ x .force  ≳⟨ ⊛≳⊛ ⟩∎
+  f .force ⊛ x .force    ∎ }
 
 ------------------------------------------------------------------------
 -- The _∣_ operator
@@ -234,14 +234,11 @@ p ∣-cong q = map-cong _,_ p ⊛-cong q
   map′ swap (map′ _,_ y ⊛ x)                                     ∼⟨⟩
   map′ swap (y ∣ x)                                              ∎
 
--- The _∣_ operator can be expressed using other functions (up to
--- expansion).
+-- Sequential composition is an expansion of parallel composition.
 
-∣-≲ : [ i ] x ∣ y ≲ (x >>=′ λ x → y >>=′ λ y → now (x , y))
-∣-≲ {x = x} {y = y} =
-  (x >>=′ λ x → y >>=′ λ y → now (x , y))                        ∼⟨⟩
-  (x >>=′ λ x → now (x ,_) >>=′ λ f → y >>=′ λ y → now (f y))    ∼⟨ associativity′ x _ _ ⟩
-  ((x >>=′ λ x → now (x ,_)) >>=′ λ f → y >>=′ λ y → now (f y))  ∼⟨ (symmetric (map∼>>=-now x) >>=-cong λ _ → _ ∎) ⟩
-  (map′ _,_ x >>=′ λ f → y >>=′ λ y → now (f y))                 ≳⟨ ⊛-≲ ⟩
-  map′ _,_ x ⊛ y                                                 ∼⟨⟩
-  x ∣ y                                                          ∎
+∣≳∣ : [ i ] x S.∣ y ≳ x ∣ y
+∣≳∣ {x = x} {y = y} =
+  x S.∣ y           ∼⟨⟩
+  map′ _,_ x S.⊛ y  ≳⟨ ⊛≳⊛ ⟩
+  map′ _,_ x ⊛ y    ∼⟨⟩
+  x ∣ y             ∎
