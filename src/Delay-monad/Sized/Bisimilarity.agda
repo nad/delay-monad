@@ -187,8 +187,8 @@ module _ {a} {A : Size → Set a} where
 
   drop-laterˡʳ :
     ∀ {k i} {j : Size< i} {x y} →
-    [ i ] x ⟨ other k ⟩ y →
-    [ j ] drop-later x ⟨ other k ⟩ drop-later y
+    [ i ] x ⟨ k ⟩ y →
+    [ j ] drop-later x ⟨ k ⟩ drop-later y
   drop-laterˡʳ now        = now
   drop-laterˡʳ (later  p) = force p
   drop-laterˡʳ (laterʳ p) = drop-laterˡ p
@@ -207,8 +207,8 @@ module _ {a} {A : Size → Set a} where
   laterˡ⁻¹ = drop-laterˡ
 
   later⁻¹ : ∀ {k i} {j : Size< i} {x y} →
-            [ i ] later x ⟨ other k ⟩ later y →
-            [ j ] force x ⟨ other k ⟩ force y
+            [ i ] later x ⟨ k ⟩ later y →
+            [ j ] force x ⟨ k ⟩ force y
   later⁻¹ = drop-laterˡʳ
 
   -- The following size-preserving variant of laterʳ⁻¹ and laterˡ⁻¹
