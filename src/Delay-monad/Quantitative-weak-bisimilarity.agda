@@ -243,7 +243,7 @@ symmetric-≈ (later p)  = later λ { .force → symmetric-≈ (p .force) }
 symmetric-≈ (laterˡ p) = laterʳ (symmetric-≈ p)
 symmetric-≈ (laterʳ p) = laterˡ (symmetric-≈ p)
 
--- Three variants of transitivity.
+-- Four variants of transitivity.
 
 transitive-≳∼ :
   ∀ {i m n x y z} →
@@ -253,6 +253,11 @@ transitive-≳∼ = λ where
   (laterˡ p) q         → laterˡ (transitive-≳∼ p q)
   (later  p) (later q) → later λ { .force →
                            transitive-≳∼ (p .force) (q .force) }
+
+transitive-∼≲ :
+  ∀ {i m n x y z} →
+  B.[ i ] x ∼ y → [ i ∣ m ∣ n ] y ≲ z → [ i ∣ m ∣ n ] x ≲ z
+transitive-∼≲ p q = transitive-≳∼ q (B.symmetric p)
 
 transitive-≈∼ :
   ∀ {i mˡ mʳ nˡ nʳ x y z} →

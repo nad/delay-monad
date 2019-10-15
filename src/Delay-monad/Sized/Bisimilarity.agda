@@ -167,26 +167,49 @@ module _ {a} {A : Size → Set a} where
 
   -- Later constructors can sometimes be removed.
 
+  drop-laterʳ :
+    ∀ {k i} {j : Size< i} {x y} →
+    [ i ] x ⟨ other k ⟩ y →
+    [ j ] x ⟨ other k ⟩ drop-later y
+  drop-laterʳ now        = now
+  drop-laterʳ (later  p) = laterˡ (force p)
+  drop-laterʳ (laterʳ p) = p
+  drop-laterʳ (laterˡ p) = laterˡ (drop-laterʳ p)
+
+  drop-laterˡ :
+    ∀ {i} {j : Size< i} {x y} →
+    [ i ] x ≈ y →
+    [ j ] drop-later x ≈ y
+  drop-laterˡ now        = now
+  drop-laterˡ (later  p) = laterʳ (force p)
+  drop-laterˡ (laterʳ p) = laterʳ (drop-laterˡ p)
+  drop-laterˡ (laterˡ p) = p
+
+  drop-laterˡʳ :
+    ∀ {k i} {j : Size< i} {x y} →
+    [ i ] x ⟨ k ⟩ y →
+    [ j ] drop-later x ⟨ k ⟩ drop-later y
+  drop-laterˡʳ now        = now
+  drop-laterˡʳ (later  p) = force p
+  drop-laterˡʳ (laterʳ p) = drop-laterˡ p
+  drop-laterˡʳ (laterˡ p) = drop-laterʳ p
+
+  -- Special cases of the functions above.
+
   laterʳ⁻¹ : ∀ {k i} {j : Size< i} {x y} →
              [ i ] x ⟨ other k ⟩ later y →
              [ j ] x ⟨ other k ⟩ force y
-  laterʳ⁻¹ (later  p) = laterˡ (force p)
-  laterʳ⁻¹ (laterʳ p) = p
-  laterʳ⁻¹ (laterˡ p) = laterˡ (laterʳ⁻¹ p)
+  laterʳ⁻¹ = drop-laterʳ
 
   laterˡ⁻¹ : ∀ {i} {j : Size< i} {x y} →
              [ i ] later x ≈ y →
              [ j ] force x ≈ y
-  laterˡ⁻¹ (later  p) = laterʳ (force p)
-  laterˡ⁻¹ (laterʳ p) = laterʳ (laterˡ⁻¹ p)
-  laterˡ⁻¹ (laterˡ p) = p
+  laterˡ⁻¹ = drop-laterˡ
 
   later⁻¹ : ∀ {k i} {j : Size< i} {x y} →
-            [ i ] later x ⟨ other k ⟩ later y →
-            [ j ] force x ⟨ other k ⟩ force y
-  later⁻¹ (later  p) = force p
-  later⁻¹ (laterʳ p) = laterˡ⁻¹ p
-  later⁻¹ (laterˡ p) = laterʳ⁻¹ p
+            [ i ] later x ⟨ k ⟩ later y →
+            [ j ] force x ⟨ k ⟩ force y
+  later⁻¹ = drop-laterˡʳ
 
   -- The following size-preserving variant of laterʳ⁻¹ and laterˡ⁻¹
   -- can be defined.
@@ -333,12 +356,24 @@ module _ {a} {A : Size → Set a} where
 
   -- Equational reasoning combinators.
 
-  infix  -1 _∎ finally-≈
-  infixr -2 step-∼ˡ step-∼∼ step-≳∼ step-≈∼ step-≳ˡ step-≈
+  infix  -1 _∎ finally finally-≳ finally-≈
+  infixr -2 step-∼ˡ step-∼∼ step-≳∼ step-≈∼ step-?∼ step-≳ˡ step-≈
             _≳⟨⟩_ step-≡ˡ _∼⟨⟩_
 
   _∎ : ∀ {k i} x → [ i ] x ⟨ k ⟩ x
   _∎ = reflexive
+
+  finally : ∀ {k i} x y →
+            [ i ] x ⟨ k ⟩ y → [ i ] x ⟨ k ⟩ y
+  finally _ _ x?y = x?y
+
+  syntax finally x y x≈y = x ?⟨ x≈y ⟩∎ y ∎
+
+  finally-≳ : ∀ {i} x y →
+              [ i ] x ≳ y → [ i ] x ≳ y
+  finally-≳ _ _ x≳y = x≳y
+
+  syntax finally-≳ x y x≳y = x ≳⟨ x≳y ⟩∎ y ∎
 
   finally-≈ : ∀ {i} x y →
               [ i ] x ≈ y → [ i ] x ≈ y
@@ -364,11 +399,17 @@ module _ {a} {A : Size → Set a} where
 
   syntax step-≳∼ x y∼z x≳y = x ≳⟨ x≳y ⟩∼ y∼z
 
-  step-≈∼ : ∀ {i} x {y z} →
-            y ∼ z → [ i ] x ≈ y → [ i ] x ≈ z
+  step-≈∼ : ∀ {k i} x {y z} →
+            y ∼ z → [ i ] x ⟨ k ⟩ y → [ i ] x ⟨ k ⟩ z
   step-≈∼ _ y∼z x≈y = transitive-∞∼ʳ x≈y y∼z
 
   syntax step-≈∼ x y∼z x≈y = x ≈⟨ x≈y ⟩∼ y∼z
+
+  step-?∼ : ∀ {k i} x {y z} →
+            y ∼ z → [ i ] x ⟨ k ⟩ y → [ i ] x ⟨ k ⟩ z
+  step-?∼ _ y∼z x?y = transitive-∞∼ʳ x?y y∼z
+
+  syntax step-?∼ x y∼z x?y = x ?⟨ x?y ⟩∼ y∼z
 
   step-≳ˡ : ∀ {k i} x {y z} →
             [ i ] y ⟨ other k ⟩ z → x ≳ y →

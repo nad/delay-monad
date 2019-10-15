@@ -76,6 +76,15 @@ import Delay-monad.Monad
 
 import Delay-monad.Always
 
+-- A combinator for running two (independent) computations in
+-- sequence.
+
+import Delay-monad.Sequential
+
+-- A combinator for running two computations in parallel.
+
+import Delay-monad.Parallel
+
 ------------------------------------------------------------------------
 -- A variant of the delay monad with a sized type parameter
 

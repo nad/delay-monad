@@ -112,6 +112,17 @@ laterˡ p >>=-cong  q = laterˡ (p >>=-cong q)
 laterʳ p >>=-cong  q = laterʳ (p >>=-cong q)
 
 ------------------------------------------------------------------------
+-- A lemma
+
+-- The function map′ can be expressed using _>>=′_ and now.
+
+map∼>>=-now :
+  ∀ {i a b} {A : Set a} {B : Set b} {f : A → B} (x : Delay A ∞) →
+  [ i ] map′ f x ∼ x >>=′ now ∘ f
+map∼>>=-now (now x)   = now
+map∼>>=-now (later x) = later λ { .force → map∼>>=-now (x .force) }
+
+------------------------------------------------------------------------
 -- Some lemmas relating monadic combinators to steps
 
 -- Use of map′ does not affect the number of steps in the computation.
