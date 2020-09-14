@@ -98,7 +98,7 @@ Terminates-propositional A-set {i} = λ p q → irr p q refl
     subst (([ i ]_≈ x) ∘ now) y≡y′ p ≡ q
   irr         (laterʳ p) (laterʳ q) refl = cong laterʳ (irr p q refl)
   irr {y = y} now        now        y≡y  =
-    subst (([ i ]_≈ now y) ∘ now) y≡y  now  ≡⟨ cong (λ eq → subst _ eq _) (A-set y≡y refl) ⟩
+    subst (([ i ]_≈ now y) ∘ now) y≡y  now  ≡⟨ cong (λ eq → subst (([ i ]_≈ now y) ∘ now) eq _) (A-set y≡y refl) ⟩
     subst (([ i ]_≈ now y) ∘ now) refl now  ≡⟨⟩
     now                                     ∎
 
