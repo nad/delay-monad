@@ -13,6 +13,7 @@ open import Prelude.Size
 
 open import Bijection equality-with-J using (_↔_)
 open import Double-negation equality-with-J
+open import Excluded-middle equality-with-J
 open import Function-universe equality-with-J hiding (id; _∘_)
 open import H-level equality-with-J
 open import H-level.Closure equality-with-J
