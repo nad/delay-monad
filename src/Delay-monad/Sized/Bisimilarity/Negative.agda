@@ -128,10 +128,9 @@ Laterʳ⁻¹-∼≈′ = ∀ {i} (x : ∀ i → A i) →
 size-preserving-laterˡ⁻¹-∼≈′⇔size-preserving-laterʳ⁻¹-∼≈′ :
   Laterˡ⁻¹-∼≈′ ⇔ Laterʳ⁻¹-∼≈′
 size-preserving-laterˡ⁻¹-∼≈′⇔size-preserving-laterʳ⁻¹-∼≈′ =
-  Laterˡ⁻¹-∼≈′  ↝⟨ record { to   = λ laterˡ⁻¹ {_} _ → symmetric ∘ laterˡ⁻¹ _ ∘ symmetric
-                          ; from = λ laterʳ⁻¹ {_} _ → symmetric ∘ laterʳ⁻¹ _ ∘ symmetric
-                          } ⟩□
-  Laterʳ⁻¹-∼≈′  □
+  record { to   = λ laterˡ⁻¹ {_} _ → symmetric ∘ laterˡ⁻¹ _ ∘ symmetric
+         ; from = λ laterʳ⁻¹ {_} _ → symmetric ∘ laterʳ⁻¹ _ ∘ symmetric
+         }
 
 -- The type Laterʳ⁻¹-∼≈′ is logically equivalent to the similar type
 -- Laterʳ⁻¹-∼≳′.
@@ -143,10 +142,9 @@ Laterʳ⁻¹-∼≳′ = ∀ {i} (x : ∀ i → A i) →
 size-preserving-laterʳ⁻¹-∼≈′⇔size-preserving-laterʳ⁻¹-∼≳′ :
   Laterʳ⁻¹-∼≈′ ⇔ Laterʳ⁻¹-∼≳′
 size-preserving-laterʳ⁻¹-∼≈′⇔size-preserving-laterʳ⁻¹-∼≳′ =
-  Laterʳ⁻¹-∼≈′  ↝⟨ record { to   = λ laterʳ⁻¹ {_} _ → ≈→-now ∘ laterʳ⁻¹ _
-                          ; from = λ laterʳ⁻¹ {_} _ → ≳→     ∘ laterʳ⁻¹ _
-                          } ⟩□
-  Laterʳ⁻¹-∼≳′  □
+  record { to   = λ laterʳ⁻¹ {_} _ → ≈→-now ∘ laterʳ⁻¹ _
+         ; from = λ laterʳ⁻¹ {_} _ → ≳→     ∘ laterʳ⁻¹ _
+         }
 
 -- If Laterʳ⁻¹-∼≳′ is inhabited, then ∀ i → A i is uninhabited.
 
