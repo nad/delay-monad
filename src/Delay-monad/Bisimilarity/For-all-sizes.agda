@@ -19,7 +19,7 @@ open import Delay-monad
 private
   variable
     a : Level
-    A : Set a
+    A : Type a
     x : A
     i : Size
 
@@ -35,14 +35,14 @@ mutual
 
   infix 4 [_]_∼ˢ_ [_]_∼ˢ′_
 
-  data [_]_∼ˢ_ {A : Set a} (i : Size) :
-               Delay A i → Delay A i → Set a where
+  data [_]_∼ˢ_ {A : Type a} (i : Size) :
+               Delay A i → Delay A i → Type a where
     now   : [ i ] now x ∼ˢ now x
     later : {x y : Delay′ A i} →
             [ i ] x ∼ˢ′ y → [ i ] later x ∼ˢ later y
 
-  record [_]_∼ˢ′_ {A : Set a}
-                  (i : Size) (x y : Delay′ A i) : Set a where
+  record [_]_∼ˢ′_ {A : Type a}
+                  (i : Size) (x y : Delay′ A i) : Type a where
     coinductive
     field
       force : {j : Size< i} → [ j ] x .force ∼ˢ y .force

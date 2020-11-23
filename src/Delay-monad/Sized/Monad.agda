@@ -17,19 +17,19 @@ open import Delay-monad.Sized.Bisimilarity
 
 -- Return.
 
-return : ∀ {i a} {A : Size → Set a} → A i → Delay A i
+return : ∀ {i a} {A : Size → Type a} → A i → Delay A i
 return = now
 
 -- Map. Note the function argument's type.
 
-map : ∀ {i a b} {A : Size → Set a} {B : Size → Set b} →
+map : ∀ {i a b} {A : Size → Type a} {B : Size → Type b} →
       ({j : Size< (ssuc i)} → A j → B j) → Delay A i → Delay B i
 map f (now   x) = now (f x)
 map f (later x) = later λ { .force → map f (force x) }
 
 -- Join.
 
-join : ∀ {i a} {A : Size → Set a} →
+join : ∀ {i a} {A : Size → Type a} →
        Delay (Delay A) i → Delay A i
 join (now   x) = x
 join (later x) = later λ { .force → join (force x) }
@@ -38,7 +38,7 @@ join (later x) = later λ { .force → join (force x) }
 
 infixl 5 _>>=_
 
-_>>=_ : ∀ {i a b} {A : Size → Set a} {B : Size → Set b} →
+_>>=_ : ∀ {i a b} {A : Size → Type a} {B : Size → Type b} →
         Delay A i → ({j : Size< (ssuc i)} → A j → Delay B j) →
         Delay B i
 x >>= f = join (map f x)
@@ -47,19 +47,20 @@ x >>= f = join (map f x)
 -- Monad laws
 
 left-identity :
-  ∀ {a b} {A : Size → Set a} {B : Size → Set b}
+  ∀ {a b} {A : Size → Type a} {B : Size → Type b}
   x (f : ∀ {i} → A i → Delay B i) →
   return x >>= f ∼ f x
 left-identity x f = reflexive (f x)
 
-right-identity : ∀ {a i} {A : Size → Set a} (x : Delay A ∞) →
+right-identity : ∀ {a i} {A : Size → Type a} (x : Delay A ∞) →
                  [ i ] x >>= return ∼ x
 right-identity (now   x) = now
 right-identity (later x) = later λ { .force →
                              right-identity (force x) }
 
 associativity :
-  ∀ {a b c i} {A : Size → Set a} {B : Size → Set b} {C : Size → Set c} →
+  ∀ {a b c i}
+    {A : Size → Type a} {B : Size → Type b} {C : Size → Type c} →
   (x : Delay A ∞) (f : ∀ {i} → A i → Delay B i)
   (g : ∀ {i} → B i → Delay C i) →
   [ i ] x >>= (λ x → f x >>= g) ∼ x >>= f >>= g
@@ -71,7 +72,7 @@ associativity (later x) f g = later λ { .force →
 -- The functions map, join and _>>=_ preserve strong and weak
 -- bisimilarity and expansion
 
-map-cong : ∀ {k i a b} {A : Size → Set a} {B : Size → Set b}
+map-cong : ∀ {k i a b} {A : Size → Type a} {B : Size → Type b}
            (f : ∀ {i} → A i → B i) {x y : Delay A ∞} →
            [ i ] x ⟨ k ⟩ y → [ i ] map f x ⟨ k ⟩ map f y
 map-cong f now        = now
@@ -79,7 +80,7 @@ map-cong f (later  p) = later λ { .force → map-cong f (force p) }
 map-cong f (laterˡ p) = laterˡ (map-cong f p)
 map-cong f (laterʳ p) = laterʳ (map-cong f p)
 
-join-cong : ∀ {k i a} {A : Size → Set a} {x y : Delay (Delay A) ∞} →
+join-cong : ∀ {k i a} {A : Size → Type a} {x y : Delay (Delay A) ∞} →
               [ i ] x ⟨ k ⟩ y → [ i ] join x ⟨ k ⟩ join y
 join-cong now        = reflexive _
 join-cong (later  p) = later λ { .force → join-cong (force p) }
@@ -89,7 +90,7 @@ join-cong (laterʳ p) = laterʳ (join-cong p)
 infixl 5 _>>=-cong_
 
 _>>=-cong_ :
-  ∀ {k i a b} {A : Size → Set a} {B : Size → Set b}
+  ∀ {k i a b} {A : Size → Type a} {B : Size → Type b}
     {x y : Delay A ∞} {f g : ∀ {i} → A i → Delay B i} →
   [ i ] x ⟨ k ⟩ y → (∀ z → [ i ] f z ⟨ k ⟩ g z) →
   [ i ] x >>= f ⟨ k ⟩ y >>= g
@@ -104,7 +105,7 @@ laterʳ p >>=-cong q = laterʳ (p >>=-cong q)
 -- The function map can be expressed using _>>=′_ and now.
 
 map∼>>=-now :
-  ∀ {i a b} {A : Size → Set a} {B : Size → Set b}
+  ∀ {i a b} {A : Size → Type a} {B : Size → Type b}
     {f : ∀ {i} → A i → B i} (x : Delay A ∞) →
   [ i ] map f x ∼ x >>= now ∘ f
 map∼>>=-now (now x)   = now

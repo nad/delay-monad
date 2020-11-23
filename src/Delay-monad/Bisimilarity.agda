@@ -22,7 +22,7 @@ open import Delay-monad.Bisimilarity.Kind
 ------------------------------------------------------------------------
 -- The code below is defined for a fixed type A
 
-module _ {a} {A : Set a} where
+module _ {a} {A : Type a} where
 
   ----------------------------------------------------------------------
   -- The relations
@@ -35,7 +35,7 @@ module _ {a} {A : Set a} where
     infix 4 [_]_⟨_⟩_ [_]_⟨_⟩′_
 
     data [_]_⟨_⟩_ (i : Size) :
-           Delay A ∞ → Kind → Delay A ∞ → Set a where
+           Delay A ∞ → Kind → Delay A ∞ → Type a where
       now    : ∀ {k x} → [ i ] now x ⟨ k ⟩ now x
       later  : ∀ {k x y} →
                [ i ] force x ⟨ k ⟩′ force y →
@@ -48,7 +48,7 @@ module _ {a} {A : Set a} where
                [ i ] x ⟨ other weak ⟩ later y
 
     record [_]_⟨_⟩′_ (i : Size)
-             (x : Delay A ∞) (k : Kind) (y : Delay A ∞) : Set a where
+             (x : Delay A ∞) (k : Kind) (y : Delay A ∞) : Type a where
       coinductive
       field
         force : {j : Size< i} → [ j ] x ⟨ k ⟩ y
@@ -59,64 +59,64 @@ module _ {a} {A : Set a} where
 
   infix 4 [_]_∼_ [_]_∼′_ _∼_ _∼′_
 
-  [_]_∼_ : Size → Delay A ∞ → Delay A ∞ → Set a
+  [_]_∼_ : Size → Delay A ∞ → Delay A ∞ → Type a
   [_]_∼_ = [_]_⟨ strong ⟩_
 
-  [_]_∼′_ : Size → Delay A ∞ → Delay A ∞ → Set a
+  [_]_∼′_ : Size → Delay A ∞ → Delay A ∞ → Type a
   [_]_∼′_ = [_]_⟨ strong ⟩′_
 
-  _∼_ : Delay A ∞ → Delay A ∞ → Set a
+  _∼_ : Delay A ∞ → Delay A ∞ → Type a
   _∼_ = [ ∞ ]_∼_
 
-  _∼′_ : Delay A ∞ → Delay A ∞ → Set a
+  _∼′_ : Delay A ∞ → Delay A ∞ → Type a
   _∼′_ = [ ∞ ]_∼′_
 
   -- Expansion.
 
   infix 4 [_]_≳_ [_]_≳′_ _≳_ _≳′_
 
-  [_]_≳_ : Size → Delay A ∞ → Delay A ∞ → Set a
+  [_]_≳_ : Size → Delay A ∞ → Delay A ∞ → Type a
   [_]_≳_ = [_]_⟨ other expansion ⟩_
 
-  [_]_≳′_ : Size → Delay A ∞ → Delay A ∞ → Set a
+  [_]_≳′_ : Size → Delay A ∞ → Delay A ∞ → Type a
   [_]_≳′_ = [_]_⟨ other expansion ⟩′_
 
-  _≳_ : Delay A ∞ → Delay A ∞ → Set a
+  _≳_ : Delay A ∞ → Delay A ∞ → Type a
   _≳_ = [ ∞ ]_≳_
 
-  _≳′_ : Delay A ∞ → Delay A ∞ → Set a
+  _≳′_ : Delay A ∞ → Delay A ∞ → Type a
   _≳′_ = [ ∞ ]_≳′_
 
   -- The converse of expansion.
 
   infix 4 [_]_≲_ [_]_≲′_ _≲_ _≲′_
 
-  [_]_≲_ : Size → Delay A ∞ → Delay A ∞ → Set a
+  [_]_≲_ : Size → Delay A ∞ → Delay A ∞ → Type a
   [_]_≲_ i = flip [ i ]_⟨ other expansion ⟩_
 
-  [_]_≲′_ : Size → Delay A ∞ → Delay A ∞ → Set a
+  [_]_≲′_ : Size → Delay A ∞ → Delay A ∞ → Type a
   [_]_≲′_ i = flip [ i ]_⟨ other expansion ⟩′_
 
-  _≲_ : Delay A ∞ → Delay A ∞ → Set a
+  _≲_ : Delay A ∞ → Delay A ∞ → Type a
   _≲_ = [ ∞ ]_≲_
 
-  _≲′_ : Delay A ∞ → Delay A ∞ → Set a
+  _≲′_ : Delay A ∞ → Delay A ∞ → Type a
   _≲′_ = [ ∞ ]_≲′_
 
   -- Weak bisimilarity.
 
   infix 4 [_]_≈_ [_]_≈′_ _≈_ _≈′_
 
-  [_]_≈_ : Size → Delay A ∞ → Delay A ∞ → Set a
+  [_]_≈_ : Size → Delay A ∞ → Delay A ∞ → Type a
   [_]_≈_ = [_]_⟨ other weak ⟩_
 
-  [_]_≈′_ : Size → Delay A ∞ → Delay A ∞ → Set a
+  [_]_≈′_ : Size → Delay A ∞ → Delay A ∞ → Type a
   [_]_≈′_ = [_]_⟨ other weak ⟩′_
 
-  _≈_ : Delay A ∞ → Delay A ∞ → Set a
+  _≈_ : Delay A ∞ → Delay A ∞ → Type a
   _≈_ = [ ∞ ]_≈_
 
-  _≈′_ : Delay A ∞ → Delay A ∞ → Set a
+  _≈′_ : Delay A ∞ → Delay A ∞ → Type a
   _≈′_ = [ ∞ ]_≈′_
 
   ----------------------------------------------------------------------
@@ -525,15 +525,15 @@ module _ {a} {A : Set a} where
 -- A statement of extensionality: strongly bisimilar computations are
 -- equal.
 
-Extensionality : (ℓ : Level) → Set (lsuc ℓ)
+Extensionality : (ℓ : Level) → Type (lsuc ℓ)
 Extensionality a =
-  {A : Set a} {x y : Delay A ∞} → x ∼ y → x ≡ y
+  {A : Type a} {x y : Delay A ∞} → x ∼ y → x ≡ y
 
 -- Another form of extensionality.
 
-Extensionality′ : (ℓ : Level) → Set (lsuc ℓ)
+Extensionality′ : (ℓ : Level) → Type (lsuc ℓ)
 Extensionality′ a =
-  {A : Set a} {x y : Delay′ A ∞} → force x ∼′ force y → x ≡ y
+  {A : Type a} {x y : Delay′ A ∞} → force x ∼′ force y → x ≡ y
 
 -- The latter form of extensionality implies the former.
 

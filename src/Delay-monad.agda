@@ -17,18 +17,18 @@ open import Conat equality-with-J
 
 mutual
 
-  data Delay {a} (A : Set a) (i : Size) : Set a where
+  data Delay {a} (A : Type a) (i : Size) : Type a where
     now   : A          → Delay A i
     later : Delay′ A i → Delay A i
 
-  record Delay′ {a} (A : Set a) (i : Size) : Set a where
+  record Delay′ {a} (A : Type a) (i : Size) : Type a where
     coinductive
     field
       force : {j : Size< i} → Delay A j
 
 open Delay′ public
 
-module _ {a} {A : Set a} where
+module _ {a} {A : Type a} where
 
   mutual
 

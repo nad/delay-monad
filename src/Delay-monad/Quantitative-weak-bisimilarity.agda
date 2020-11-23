@@ -5,11 +5,12 @@
 
 {-# OPTIONS --without-K --safe --sized-types #-}
 
-module Delay-monad.Quantitative-weak-bisimilarity {a} {A : Set a} where
+open import Prelude hiding (_+_; _*_)
+
+module Delay-monad.Quantitative-weak-bisimilarity {a} {A : Type a} where
 
 open import Equality.Propositional
 open import Logical-equivalence using (_⇔_)
-open import Prelude hiding (_+_; _*_)
 open import Prelude.Size
 
 open import Conat equality-with-J as Conat
@@ -37,7 +38,7 @@ mutual
 
   data [_∣_∣_∣_∣_]_≈_
          (i : Size) (mˡ mʳ : Conat ∞) :
-         Conat ∞ → Conat ∞ → Delay A ∞ → Delay A ∞ → Set a where
+         Conat ∞ → Conat ∞ → Delay A ∞ → Delay A ∞ → Type a where
     now    : ∀ {x nˡ nʳ} → [ i ∣ mˡ ∣ mʳ ∣ nˡ ∣ nʳ ] now x ≈ now x
     later  : ∀ {x y nˡ nʳ} →
              [ i ∣ mˡ ∣ mʳ ∣ nˡ + mˡ ∣ nʳ + mʳ ] x .force ≈′ y .force →
@@ -51,7 +52,7 @@ mutual
 
   record [_∣_∣_∣_∣_]_≈′_
            (i : Size) (mˡ mʳ nˡ nʳ : Conat ∞)
-           (x y : Delay A ∞) : Set a where
+           (x y : Delay A ∞) : Type a where
     coinductive
     field
       force : {j : Size< i} → [ j ∣ mˡ ∣ mʳ ∣ nˡ ∣ nʳ ] x ≈ y
@@ -62,42 +63,42 @@ open [_∣_∣_∣_∣_]_≈′_ public
 
 infix 4 [_∣_∣_]_≈_ [_∣_∣_]_≈′_
 
-[_∣_∣_]_≈_ : Size → Conat ∞ → Conat ∞ → Delay A ∞ → Delay A ∞ → Set a
+[_∣_∣_]_≈_ : Size → Conat ∞ → Conat ∞ → Delay A ∞ → Delay A ∞ → Type a
 [ i ∣ mˡ ∣ mʳ ] x ≈ y = [ i ∣ mˡ ∣ mʳ ∣ zero ∣ zero ] x ≈ y
 
-[_∣_∣_]_≈′_ : Size → Conat ∞ → Conat ∞ → Delay A ∞ → Delay A ∞ → Set a
+[_∣_∣_]_≈′_ : Size → Conat ∞ → Conat ∞ → Delay A ∞ → Delay A ∞ → Type a
 [ i ∣ mˡ ∣ mʳ ] x ≈′ y = [ i ∣ mˡ ∣ mʳ ∣ zero ∣ zero ] x ≈′ y
 
 -- Quantitative expansion.
 
 infix 4 [_∣_∣_]_≳_ [_∣_∣_]_≳′_ [_∣_]_≳_ [_∣_]_≳′_
 
-[_∣_∣_]_≳_ : Size → Conat ∞ → Conat ∞ → Delay A ∞ → Delay A ∞ → Set a
+[_∣_∣_]_≳_ : Size → Conat ∞ → Conat ∞ → Delay A ∞ → Delay A ∞ → Type a
 [ i ∣ m ∣ n ] x ≳ y = [ i ∣ m ∣ zero ∣ n ∣ zero ] x ≈ y
 
-[_∣_∣_]_≳′_ : Size → Conat ∞ → Conat ∞ → Delay A ∞ → Delay A ∞ → Set a
+[_∣_∣_]_≳′_ : Size → Conat ∞ → Conat ∞ → Delay A ∞ → Delay A ∞ → Type a
 [ i ∣ m ∣ n ] x ≳′ y = [ i ∣ m ∣ zero ∣ n ∣ zero ] x ≈′ y
 
-[_∣_]_≳_ : Size → Conat ∞ → Delay A ∞ → Delay A ∞ → Set a
+[_∣_]_≳_ : Size → Conat ∞ → Delay A ∞ → Delay A ∞ → Type a
 [ i ∣ m ] x ≳ y = [ i ∣ m ∣ zero ] x ≳ y
 
-[_∣_]_≳′_ : Size → Conat ∞ → Delay A ∞ → Delay A ∞ → Set a
+[_∣_]_≳′_ : Size → Conat ∞ → Delay A ∞ → Delay A ∞ → Type a
 [ i ∣ m ] x ≳′ y = [ i ∣ m ∣ zero ] x ≳′ y
 
 -- The converse of quantitative expansion.
 
 infix 4 [_∣_∣_]_≲_ [_∣_∣_]_≲′_ [_∣_]_≲_ [_∣_]_≲′_
 
-[_∣_∣_]_≲_ : Size → Conat ∞ → Conat ∞ → Delay A ∞ → Delay A ∞ → Set a
+[_∣_∣_]_≲_ : Size → Conat ∞ → Conat ∞ → Delay A ∞ → Delay A ∞ → Type a
 [ i ∣ m ∣ n ] x ≲ y = [ i ∣ m ∣ n ] y ≳ x
 
-[_∣_∣_]_≲′_ : Size → Conat ∞ → Conat ∞ → Delay A ∞ → Delay A ∞ → Set a
+[_∣_∣_]_≲′_ : Size → Conat ∞ → Conat ∞ → Delay A ∞ → Delay A ∞ → Type a
 [ i ∣ m ∣ n ] x ≲′ y = [ i ∣ m ∣ n ] y ≳′ x
 
-[_∣_]_≲_ : Size → Conat ∞ → Delay A ∞ → Delay A ∞ → Set a
+[_∣_]_≲_ : Size → Conat ∞ → Delay A ∞ → Delay A ∞ → Type a
 [ i ∣ m ] x ≲ y = [ i ∣ m ] y ≳ x
 
-[_∣_]_≲′_ : Size → Conat ∞ → Delay A ∞ → Delay A ∞ → Set a
+[_∣_]_≲′_ : Size → Conat ∞ → Delay A ∞ → Delay A ∞ → Type a
 [ i ∣ m ] x ≲′ y = [ i ∣ m ] y ≳′ x
 
 ------------------------------------------------------------------------

@@ -15,7 +15,7 @@ open import Nat equality-with-J
 open import Delay-monad.Sized
 open import Delay-monad.Sized.Partial-order
 
-module _ {a} {A : Size → Set a} where
+module _ {a} {A : Size → Type a} where
 
   -- Least upper bounds (if they exist).
 
@@ -102,11 +102,11 @@ module _ {a} {A : Size → Set a} where
 
 -- Increasing sequences.
 
-Increasing-sequence : ∀ {a} → (Size → Set a) → Set a
+Increasing-sequence : ∀ {a} → (Size → Type a) → Type a
 Increasing-sequence A =
   ∃ λ (f : ℕ → ∀ {i} → Delay A i) → ∀ n → f n ⊑ f (suc n)
 
-module _ {a} {A : Size → Set a} where
+module _ {a} {A : Size → Type a} where
 
   -- The tail of an increasing sequence.
 

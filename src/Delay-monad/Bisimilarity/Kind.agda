@@ -13,10 +13,10 @@ open import Prelude
 -- The three different relations are defined as a single relation,
 -- indexed by the Kind type.
 
-data Not-strong-kind : Set where
+data Not-strong-kind : Type where
   weak expansion : Not-strong-kind
 
-data Kind : Set where
+data Kind : Type where
   strong : Kind
   other  : Not-strong-kind → Kind
 

@@ -4,14 +4,14 @@
 
 {-# OPTIONS --without-K --safe --sized-types #-}
 
+open import Prelude
 open import Prelude.Size
 
 module Delay-monad.Sized.Bisimilarity.Alternative
-  {a} {A : Size → Set a} where
+  {a} {A : Size → Type a} where
 
 open import Equality.Propositional as E
 open import Logical-equivalence using (_⇔_)
-open import Prelude
 
 open import Function-universe equality-with-J hiding (_∘_)
 open import H-level equality-with-J
@@ -32,7 +32,7 @@ open import Delay-monad.Sized.Termination
 
 infix 4 _≈₂_
 
-_≈₂_ : Delay A ∞ → Delay A ∞ → Set a
+_≈₂_ : Delay A ∞ → Delay A ∞ → Type a
 x ≈₂ y = ∀ z → x ⇓ z ⇔ y ⇓ z
 
 -- If A ∞ is a set, then this alternative definition of weak
@@ -54,20 +54,20 @@ infix 4 [_]_≈₃_ [_]_≈₃′_ _≈₃_
 
 mutual
 
-  data [_]_≈₃_ (i : Size) : Delay A ∞ → Delay A ∞ → Set a where
+  data [_]_≈₃_ (i : Size) : Delay A ∞ → Delay A ∞ → Type a where
     both-terminate : ∀ {x y v} → x ⇓ v → y ⇓ v → [ i ] x ≈₃ y
     later          : ∀ {x y} →
                      [ i ] force x ≈₃′ force y →
                      [ i ] later x ≈₃  later y
 
-  record [_]_≈₃′_ (i : Size) (x y : Delay A ∞) : Set a where
+  record [_]_≈₃′_ (i : Size) (x y : Delay A ∞) : Type a where
     coinductive
     field
       force : {j : Size< i} → [ j ] x ≈₃ y
 
 open [_]_≈₃′_ public
 
-_≈₃_ : Delay A ∞ → Delay A ∞ → Set a
+_≈₃_ : Delay A ∞ → Delay A ∞ → Type a
 _≈₃_ = [ ∞ ]_≈₃_
 
 -- If ∀ i → A i is inhabited, then this definition is not
