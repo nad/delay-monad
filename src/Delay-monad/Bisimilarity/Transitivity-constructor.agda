@@ -11,12 +11,13 @@
 
 {-# OPTIONS --without-K --safe --sized-types #-}
 
+open import Prelude
+
 module Delay-monad.Bisimilarity.Transitivity-constructor
-  {a} {A : Set a} where
+  {a} {A : Type a} where
 
 open import Equality.Propositional
 open import Logical-equivalence using (_⇔_)
-open import Prelude
 open import Prelude.Size
 
 open import Function-universe equality-with-J hiding (Kind)
@@ -31,14 +32,14 @@ open import Delay-monad.Bisimilarity.Negative
 -- There are two kinds of proof "programs", corresponding to strong
 -- and weak bisimilarity.
 
-data Kind : Set where
+data Kind : Type where
   strong weak : Kind
 
 mutual
 
   -- Proof "programs".
 
-  data Prog (i : Size) : Kind → Delay A ∞ → Delay A ∞ → Set a where
+  data Prog (i : Size) : Kind → Delay A ∞ → Delay A ∞ → Type a where
 
     -- Congruences.
 
@@ -64,7 +65,7 @@ mutual
     transP : ∀ {k x y z} →
              Prog i strong x y → Prog i k y z → Prog i k x z
 
-  record Prog′ (i : Size) (k : Kind) (x y : Delay A ∞) : Set a where
+  record Prog′ (i : Size) (k : Kind) (x y : Delay A ∞) : Type a where
     coinductive
     field
       force : {j : Size< i} → Prog j k x y
@@ -95,7 +96,7 @@ complete-weak (later  p) =
 
 -- Proof WHNFs.
 
-data WHNF (i : Size) : Kind → Delay A ∞ → Delay A ∞ → Set a where
+data WHNF (i : Size) : Kind → Delay A ∞ → Delay A ∞ → Type a where
   now    : ∀ {k x} → WHNF i k (now x) (now x)
   later  : ∀ {k x y} →
            Prog′ i k (force x) (force y) →

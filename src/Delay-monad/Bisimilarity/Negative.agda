@@ -4,11 +4,12 @@
 
 {-# OPTIONS --without-K --safe --sized-types #-}
 
-module Delay-monad.Bisimilarity.Negative {a} {A : Set a} where
+open import Prelude
+
+module Delay-monad.Bisimilarity.Negative {a} {A : Type a} where
 
 open import Equality.Propositional
 open import Logical-equivalence using (_⇔_)
-open import Prelude
 open import Prelude.Size
 
 open import Function-universe equality-with-J hiding (id; _∘_)

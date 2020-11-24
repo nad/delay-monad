@@ -4,13 +4,13 @@
 
 {-# OPTIONS --without-K --safe --sized-types #-}
 
+open import Prelude
 open import Prelude.Size
 
-module Delay-monad.Sized.Termination {a} {A : Size → Set a} where
+module Delay-monad.Sized.Termination {a} {A : Size → Type a} where
 
 open import Equality.Propositional
 open import Logical-equivalence using (_⇔_)
-open import Prelude
 
 open import Bijection equality-with-J using (_↔_)
 open import Double-negation equality-with-J
@@ -22,12 +22,12 @@ open import Delay-monad.Sized.Bisimilarity hiding (_∎; step-≡ˡ)
 
 -- Termination predicates.
 
-Terminates : Size → Delay A ∞ → A ∞ → Set a
+Terminates : Size → Delay A ∞ → A ∞ → Type a
 Terminates i x y = [ i ] now y ≈ x
 
 infix 4 _⇓_
 
-_⇓_ : Delay A ∞ → A ∞ → Set a
+_⇓_ : Delay A ∞ → A ∞ → Type a
 _⇓_ = Terminates ∞
 
 -- Terminates i is pointwise isomorphic to Terminates ∞.

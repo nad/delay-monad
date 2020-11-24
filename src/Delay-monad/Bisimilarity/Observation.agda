@@ -21,7 +21,7 @@ mutual
 
   -- A mixed inductive-coinductive type.
 
-  data D (i : Size) : Set where
+  data D (i : Size) : Type where
     -- Output a boolean and continue. Note that this constructor is
     -- inductive.
     put : Bool → D i → D i
@@ -30,7 +30,7 @@ mutual
     -- "observable" (as captured by weak bisimilarity).
     later : D′ i → D i
 
-  record D′ (i : Size) : Set where
+  record D′ (i : Size) : Type where
     coinductive
     field
       force : {j : Size< i} → D j
@@ -57,7 +57,7 @@ put′ b x = later λ { .force → put b (x .force) }
 -- The output relation: x [ n ]≡ b means that x can output at least n
 -- times, and the n-th output is b.
 
-data _[_]≡_ : D ∞ → ℕ → Bool → Set where
+data _[_]≡_ : D ∞ → ℕ → Bool → Type where
   put-zero : put b x [ zero ]≡ b
   put-suc  : x [ n ]≡ b → put b′ x [ suc n ]≡ b
   later    : x′ .force [ n ]≡ b → later x′ [ n ]≡ b
@@ -75,7 +75,7 @@ data _[_]≡_ : D ∞ → ℕ → Bool → Set where
 -- Weak bisimilarity. Two computations are weakly bisimilar if the
 -- output relation cannot distinguish between them.
 
-_≈_ : D ∞ → D ∞ → Set
+_≈_ : D ∞ → D ∞ → Type
 x ≈ y = ∀ {n b} → x [ n ]≡ b ⇔ y [ n ]≡ b
 
 -- Weak bisimilarity is propositional (assuming extensionality).
@@ -140,13 +140,13 @@ module Not-weak-bisimilarity where
     -- Delay-monad.Bisimilarity one might believe that weak
     -- bisimilarity for D can be defined in the following way:
 
-    data [_]_≈_ (i : Size) : D ∞ → D ∞ → Set where
+    data [_]_≈_ (i : Size) : D ∞ → D ∞ → Type where
       put    : [ i ] x ≈ y → [ i ] put b x ≈ put b y
       later  : [ i ] x′ .force ≈′ y′ .force → [ i ] later x′ ≈ later y′
       laterˡ : [ i ] x′ .force ≈ y → [ i ] later x′ ≈ y
       laterʳ : [ i ] x ≈ y′ .force → [ i ] x ≈ later y′
 
-    record [_]_≈′_ (i : Size) (x y : D ∞) : Set where
+    record [_]_≈′_ (i : Size) (x y : D ∞) : Type where
       coinductive
       field
         force : {j : Size< i} → [ j ] x ≈ y
@@ -237,13 +237,13 @@ mutual
   -- The following definition of weak bisimilarity uses a coinductive
   -- put constructor.
 
-  data [_]_≈_ (i : Size) : D ∞ → D ∞ → Set where
+  data [_]_≈_ (i : Size) : D ∞ → D ∞ → Type where
     put    : [ i ] x ≈′ y → [ i ] put b x ≈ put b y
     later  : [ i ] x′ .force ≈′ y′ .force → [ i ] later x′ ≈ later y′
     laterˡ : [ i ] x′ .force ≈ y → [ i ] later x′ ≈ y
     laterʳ : [ i ] x ≈ y′ .force → [ i ] x ≈ later y′
 
-  record [_]_≈′_ (i : Size) (x y : D ∞) : Set where
+  record [_]_≈′_ (i : Size) (x y : D ∞) : Type where
     coinductive
     field
       force : {j : Size< i} → [ j ] x ≈ y

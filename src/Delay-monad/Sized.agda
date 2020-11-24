@@ -16,18 +16,18 @@ open import Bijection equality-with-J using (_↔_)
 
 mutual
 
-  data Delay {a} (A : Size → Set a) (i : Size) : Set a where
+  data Delay {a} (A : Size → Type a) (i : Size) : Type a where
     now   : A i        → Delay A i
     later : Delay′ A i → Delay A i
 
-  record Delay′ {a} (A : Size → Set a) (i : Size) : Set a where
+  record Delay′ {a} (A : Size → Type a) (i : Size) : Type a where
     coinductive
     field
       force : {j : Size< i} → Delay A j
 
 open Delay′ public
 
-module _ {a} {A : Size → Set a} where
+module _ {a} {A : Size → Type a} where
 
   mutual
 

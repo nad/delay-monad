@@ -21,14 +21,14 @@ open import Delay-monad.Bisimilarity as B
 
 -- A universe-polymorphic variant of map.
 
-map′ : ∀ {i a b} {A : Set a} {B : Set b} →
+map′ : ∀ {i a b} {A : Type a} {B : Type b} →
        (A → B) → Delay A i → Delay B i
 map′ f (now   x) = now (f x)
 map′ f (later x) = later λ { .force → map′ f (force x) }
 
 -- Join.
 
-join : ∀ {i a} {A : Set a} →
+join : ∀ {i a} {A : Type a} →
        Delay (Delay A i) i → Delay A i
 join (now   x) = x
 join (later x) = later λ { .force → join (force x) }
@@ -37,7 +37,7 @@ join (later x) = later λ { .force → join (force x) }
 
 infixl 5 _>>=′_
 
-_>>=′_ : ∀ {i a b} {A : Set a} {B : Set b} →
+_>>=′_ : ∀ {i a b} {A : Type a} {B : Type b} →
          Delay A i → (A → Delay B i) → Delay B i
 x >>=′ f = join (map′ f x)
 
@@ -45,7 +45,7 @@ instance
 
   -- A raw monad instance.
 
-  delay-raw-monad : ∀ {a i} → Raw-monad (λ (A : Set a) → Delay A i)
+  delay-raw-monad : ∀ {a i} → Raw-monad (λ (A : Type a) → Delay A i)
   Raw-monad.return delay-raw-monad = now
   Raw-monad._>>=_  delay-raw-monad = _>>=′_
 
@@ -53,18 +53,18 @@ instance
 -- Monad laws
 
 left-identity′ :
-  ∀ {a b} {A : Set a} {B : Set b} x (f : A → Delay B ∞) →
+  ∀ {a b} {A : Type a} {B : Type b} x (f : A → Delay B ∞) →
   return x >>=′ f ∼ f x
 left-identity′ x f = reflexive (f x)
 
-right-identity′ : ∀ {a i} {A : Set a} (x : Delay A ∞) →
+right-identity′ : ∀ {a i} {A : Type a} (x : Delay A ∞) →
                   [ i ] x >>= return ∼ x
 right-identity′ (now   x) = now
 right-identity′ (later x) = later λ { .force →
                               right-identity′ (force x) }
 
 associativity′ :
-  ∀ {a b c i} {A : Set a} {B : Set b} {C : Set c} →
+  ∀ {a b c i} {A : Type a} {B : Type b} {C : Type c} →
   (x : Delay A ∞) (f : A → Delay B ∞) (g : B → Delay C ∞) →
   [ i ] x >>=′ (λ x → f x >>=′ g) ∼ x >>=′ f >>=′ g
 associativity′ (now   x) f g = reflexive (f x >>=′ g)
@@ -74,7 +74,7 @@ associativity′ (later x) f g = later λ { .force →
 -- The delay monad is a monad (assuming extensionality).
 
 delay-monad :
-  ∀ {a} → B.Extensionality a → Monad (λ (A : Set a) → Delay A ∞)
+  ∀ {a} → B.Extensionality a → Monad (λ (A : Type a) → Delay A ∞)
 Monad.raw-monad      (delay-monad ext)       = delay-raw-monad
 Monad.left-identity  (delay-monad ext) x f   = ext (left-identity′ x f)
 Monad.right-identity (delay-monad ext) x     = ext (right-identity′ x)
@@ -84,7 +84,7 @@ Monad.associativity  (delay-monad ext) x f g = ext (associativity′ x f g)
 -- The functions map′, join and _>>=′_ preserve strong and weak
 -- bisimilarity and expansion
 
-map-cong : ∀ {k i a b} {A : Set a} {B : Set b}
+map-cong : ∀ {k i a b} {A : Type a} {B : Type b}
            (f : A → B) {x y : Delay A ∞} →
            [ i ] x ⟨ k ⟩ y → [ i ] map′ f x ⟨ k ⟩ map′ f y
 map-cong f now        = now
@@ -92,7 +92,7 @@ map-cong f (later  p) = later λ { .force → map-cong f (force p) }
 map-cong f (laterˡ p) = laterˡ (map-cong f p)
 map-cong f (laterʳ p) = laterʳ (map-cong f p)
 
-join-cong : ∀ {k i a} {A : Set a} {x y : Delay (Delay A ∞) ∞} →
+join-cong : ∀ {k i a} {A : Type a} {x y : Delay (Delay A ∞) ∞} →
             [ i ] x ⟨ k ⟩ y → [ i ] join x ⟨ k ⟩ join y
 join-cong now        = reflexive _
 join-cong (later  p) = later λ { .force → join-cong (force p) }
@@ -102,7 +102,7 @@ join-cong (laterʳ p) = laterʳ (join-cong p)
 infixl 5 _>>=-cong_
 
 _>>=-cong_ :
-  ∀ {k i a b} {A : Set a} {B : Set b}
+  ∀ {k i a b} {A : Type a} {B : Type b}
     {x y : Delay A ∞} {f g : A → Delay B ∞} →
   [ i ] x ⟨ k ⟩ y → (∀ z → [ i ] f z ⟨ k ⟩ g z) →
   [ i ] x >>=′ f ⟨ k ⟩ y >>=′ g
@@ -117,7 +117,7 @@ laterʳ p >>=-cong  q = laterʳ (p >>=-cong q)
 -- The function map′ can be expressed using _>>=′_ and now.
 
 map∼>>=-now :
-  ∀ {i a b} {A : Set a} {B : Set b} {f : A → B} (x : Delay A ∞) →
+  ∀ {i a b} {A : Type a} {B : Type b} {f : A → B} (x : Delay A ∞) →
   [ i ] map′ f x ∼ x >>=′ now ∘ f
 map∼>>=-now (now x)   = now
 map∼>>=-now (later x) = later λ { .force → map∼>>=-now (x .force) }
@@ -128,7 +128,7 @@ map∼>>=-now (later x) = later λ { .force → map∼>>=-now (x .force) }
 -- Use of map′ does not affect the number of steps in the computation.
 
 steps-map′ :
-  ∀ {i a b} {A : Set a} {B : Set b} {f : A → B}
+  ∀ {i a b} {A : Type a} {B : Type b} {f : A → B}
   (x : Delay A ∞) →
   Conat.[ i ] steps (map′ f x) ∼ steps x
 steps-map′ (now x)   = zero
@@ -138,7 +138,7 @@ steps-map′ (later x) = suc λ { .force → steps-map′ (x .force) }
 -- computation.
 
 steps-⟨$⟩ :
-  ∀ {i ℓ} {A B : Set ℓ} {f : A → B}
+  ∀ {i ℓ} {A B : Type ℓ} {f : A → B}
   (x : Delay A ∞) →
   Conat.[ i ] steps (f ⟨$⟩ x) ∼ steps x
 steps-⟨$⟩ (now x)   = zero

@@ -4,11 +4,12 @@
 
 {-# OPTIONS --without-K --safe --sized-types #-}
 
-module Delay-monad.Partial-order {a} {A : Set a} where
+open import Prelude
+
+module Delay-monad.Partial-order {a} {A : Type a} where
 
 open import Equality.Propositional as E
 open import Logical-equivalence using (_⇔_)
-open import Prelude
 open import Prelude.Size
 
 open import Bijection equality-with-J using (_↔_)
@@ -39,22 +40,22 @@ infix 4 [_]_⊑_ [_]_⊑′_ _⊑_ _⊑′_
 
 mutual
 
-  data [_]_⊑_ (i : Size) : Delay A ∞ → Delay A ∞ → Set a where
+  data [_]_⊑_ (i : Size) : Delay A ∞ → Delay A ∞ → Type a where
     now    : ∀ {x} → [ i ] now x ⊑ now x
     laterʳ : ∀ {x y} → [ i ] x ⊑ force y → [ i ] x ⊑ later y
     laterˡ : ∀ {x y} → [ i ] force x ⊑′ y → [ i ] later x ⊑ y
 
-  record [_]_⊑′_ (i : Size) (x y : Delay A ∞) : Set a where
+  record [_]_⊑′_ (i : Size) (x y : Delay A ∞) : Type a where
     coinductive
     field
       force : {j : Size< i} → [ j ] x ⊑ y
 
 open [_]_⊑′_ public
 
-_⊑_ : Delay A ∞ → Delay A ∞ → Set a
+_⊑_ : Delay A ∞ → Delay A ∞ → Type a
 _⊑_ = [ ∞ ]_⊑_
 
-_⊑′_ : Delay A ∞ → Delay A ∞ → Set a
+_⊑′_ : Delay A ∞ → Delay A ∞ → Type a
 _⊑′_ = [ ∞ ]_⊑′_
 
 -- A derived "constructor".
@@ -65,10 +66,10 @@ later-cong p = laterʳ (laterˡ p)
 
 -- Termination predicates.
 
-Terminates : Size → Delay A ∞ → A → Set a
+Terminates : Size → Delay A ∞ → A → Type a
 Terminates i x y = [ i ] now y ⊑ x
 
-_⇓_ : Delay A ∞ → A → Set a
+_⇓_ : Delay A ∞ → A → Type a
 _⇓_ = Terminates ∞
 
 -- If x terminates with the values y and z, then y is equal to z.

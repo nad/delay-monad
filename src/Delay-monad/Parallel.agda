@@ -23,7 +23,7 @@ private
 
   variable
     a b             : Level
-    A B             : Set a
+    A B             : Type a
     i               : Size
     k               : Kind
     f f₁ f₂ g       : Delay (A → B) ∞
