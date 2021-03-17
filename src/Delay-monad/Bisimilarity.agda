@@ -230,7 +230,7 @@ module _ {a} {A : Type a} where
       ∀ {x′ y′ x y} →
       [ i ] later x ⟨ other k ⟩ y′ →
       [ i ] x′ ⟨ other k ⟩ later y →
-      force x ≡ x′ → force y ≡ y′ →
+      force x {j = ∞} ≡ x′ → force y ≡ y′ →
       [ i ] x′ ⟨ other k ⟩ y′
     laterˡʳ⁻¹′ (later  p) (later  q) ≡x′    ≡y′    = laterˡʳ⁻¹″ (force p)                (force q)                ≡x′ ≡y′
     laterˡʳ⁻¹′ (laterʳ p) (later  q) ≡x′    ≡y′    = laterˡʳ⁻¹″ (λ { {_} → laterˡ⁻¹ p }) (force q)                ≡x′ ≡y′
