@@ -3,7 +3,7 @@
 -- number of steps in two computations
 ------------------------------------------------------------------------
 
-{-# OPTIONS --without-K --safe --sized-types #-}
+{-# OPTIONS --safe --sized-types #-}
 
 open import Prelude hiding (_+_; _*_)
 

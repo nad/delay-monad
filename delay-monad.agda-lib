@@ -1,4 +1,6 @@
 name: delay-monad
 depend: equality
 include: src
-flags: --no-import-sorts
+flags:
+  --without-K
+  --no-import-sorts

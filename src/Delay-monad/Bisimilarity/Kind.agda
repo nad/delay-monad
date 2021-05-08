@@ -3,7 +3,7 @@
 -- bisimilarity and expansion
 ------------------------------------------------------------------------
 
-{-# OPTIONS --without-K --safe #-}
+{-# OPTIONS --safe #-}
 
 module Delay-monad.Bisimilarity.Kind where
 

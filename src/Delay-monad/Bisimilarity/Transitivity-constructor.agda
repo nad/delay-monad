@@ -9,7 +9,7 @@
 -- corecursive definitions. However, it is unclear if this is ever
 -- useful: the example presented below is rather contrived.
 
-{-# OPTIONS --without-K --safe --sized-types #-}
+{-# OPTIONS --safe --sized-types #-}
 
 open import Prelude
 

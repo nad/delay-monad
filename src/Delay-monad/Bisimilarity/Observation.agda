@@ -2,7 +2,7 @@
 -- An observation about weak bisimilarity
 ------------------------------------------------------------------------
 
-{-# OPTIONS --without-K --safe --sized-types #-}
+{-# OPTIONS --safe --sized-types #-}
 
 module Delay-monad.Bisimilarity.Observation where
 
