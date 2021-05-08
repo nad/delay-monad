@@ -2,7 +2,7 @@
 -- The "always true" predicate, □
 ------------------------------------------------------------------------
 
-{-# OPTIONS --safe --sized-types #-}
+{-# OPTIONS --sized-types #-}
 
 module Delay-monad.Sized.Always where
 

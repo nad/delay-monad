@@ -4,7 +4,7 @@
 -- equality
 ------------------------------------------------------------------------
 
-{-# OPTIONS --cubical --safe --sized-types #-}
+{-# OPTIONS --cubical --sized-types #-}
 
 module Delay-monad.Sized.Bisimilarity.For-all-sizes where
 

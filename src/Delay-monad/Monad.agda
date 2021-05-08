@@ -2,7 +2,7 @@
 -- The delay monad is a monad up to strong bisimilarity
 ------------------------------------------------------------------------
 
-{-# OPTIONS --safe --sized-types #-}
+{-# OPTIONS --sized-types #-}
 
 module Delay-monad.Monad where
 

@@ -2,7 +2,7 @@
 -- A combinator for running two computations in parallel
 ------------------------------------------------------------------------
 
-{-# OPTIONS --safe --sized-types #-}
+{-# OPTIONS --sized-types #-}
 
 module Delay-monad.Parallel where
 

@@ -2,7 +2,7 @@
 -- A combinator for running two (independent) computations in sequence
 ------------------------------------------------------------------------
 
-{-# OPTIONS --safe --sized-types #-}
+{-# OPTIONS --sized-types #-}
 
 module Delay-monad.Sequential where
 

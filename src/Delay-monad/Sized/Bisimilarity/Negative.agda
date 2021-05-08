@@ -2,7 +2,7 @@
 -- Some negative results related to weak bisimilarity and expansion
 ------------------------------------------------------------------------
 
-{-# OPTIONS --safe --sized-types #-}
+{-# OPTIONS --sized-types #-}
 
 open import Prelude
 open import Prelude.Size
