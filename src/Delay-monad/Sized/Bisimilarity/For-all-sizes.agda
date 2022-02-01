@@ -181,7 +181,7 @@ private
       ≡⇒∼ (cong later (ext′ p))                              ≡⟨⟩
 
       subst ([ _ ] later x ∼ˢ_) (cong later (ext′ p))
-        (later (reflexiveˢ′ x))                              ≡⟨ sym $ subst-∘ ([ _ ] later x ∼ˢ_) later _ {p = later (reflexiveˢ′ x)} ⟩
+        (later (reflexiveˢ′ x))                              ≡⟨ sym $ subst-∘ ([ _ ] later x ∼ˢ_) later (ext′ p) {p = later (reflexiveˢ′ x)} ⟩
 
       subst (λ y → [ _ ] later x ∼ˢ later y) (ext′ p)
         (later (reflexiveˢ′ x))                              ≡⟨ elim¹
