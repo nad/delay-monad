@@ -11,6 +11,7 @@ open import Logical-equivalence using (_⇔_)
 open import Prelude
 open import Prelude.Size
 
+open import Extensionality equality-with-J
 open import Function-universe equality-with-J as F hiding (_∘_)
 open import H-level.Closure equality-with-J
 

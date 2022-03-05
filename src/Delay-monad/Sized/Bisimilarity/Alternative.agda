@@ -10,9 +10,10 @@ open import Prelude.Size
 module Delay-monad.Sized.Bisimilarity.Alternative
   {a} {A : Size → Type a} where
 
-open import Equality.Propositional as E
+open import Equality.Propositional
 open import Logical-equivalence using (_⇔_)
 
+import Extensionality equality-with-J as E
 open import Function-universe equality-with-J hiding (_∘_)
 open import H-level equality-with-J
 open import H-level.Closure equality-with-J

@@ -8,10 +8,11 @@ open import Prelude
 
 module Delay-monad.Bisimilarity.Alternative {a} {A : Type a} where
 
-open import Equality.Propositional as E
+open import Equality.Propositional
 open import Logical-equivalence using (_⇔_)
 open import Prelude.Size
 
+import Extensionality equality-with-J as E
 open import Function-universe equality-with-J hiding (_∘_)
 open import H-level equality-with-J
 open import H-level.Closure equality-with-J

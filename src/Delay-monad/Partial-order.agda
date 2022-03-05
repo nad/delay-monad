@@ -8,13 +8,14 @@ open import Prelude
 
 module Delay-monad.Partial-order {a} {A : Type a} where
 
-open import Equality.Propositional as E
+open import Equality.Propositional
 open import Logical-equivalence using (_⇔_)
 open import Prelude.Size
 
 open import Bijection equality-with-J using (_↔_)
 open import Double-negation equality-with-J
 open import Excluded-middle equality-with-J
+import Extensionality equality-with-J as E
 open import Function-universe equality-with-J hiding (id; _∘_)
 open import H-level equality-with-J
 open import H-level.Closure equality-with-J
