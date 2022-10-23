@@ -2,5 +2,5 @@ name: delay-monad
 depend: equality
 include: src
 flags:
-  --without-K
+  --cubical-compatible
   --no-import-sorts
