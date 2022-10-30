@@ -4,3 +4,4 @@ include: src
 flags:
   --cubical-compatible
   --no-import-sorts
+  --warning=noUnsupportedIndexedMatch
